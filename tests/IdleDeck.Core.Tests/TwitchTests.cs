@@ -57,11 +57,11 @@ public class TwitchTests
     [Fact]
     public void Parse_numeric_welcome()
     {
-        var m = IrcMessage.Parse(":tmi.twitch.tv 001 patrick :Welcome, GLHF!");
+        var m = IrcMessage.Parse(":tmi.twitch.tv 001 treinador :Welcome, GLHF!");
 
         Assert.NotNull(m);
         Assert.Equal("001", m.Command);
-        Assert.Equal(["patrick"], m.Params);
+        Assert.Equal(["treinador"], m.Params);
     }
 
     [Theory]

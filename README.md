@@ -11,10 +11,14 @@ live da Twitch, ranking de hunts e sniper do mercado. Programa de Windows, de c�
 </p>
 
 <p align="center">
+  <img src="docs/img/hunt.png" alt="Painel do /hunt: a melhor hunt por conta e o ranking de hunts por XP/h e ouro/h" width="760">
+</p>
+
+<p align="center">
   <img src="docs/img/sniper.png" alt="Painel do Sniper do mercado: nova regra, radar de Pokémon, regras ativas, proteção de saldo e feed" width="760">
 </p>
 
-<sub>Capturas com dados de exemplo.</sub>
+<sub>Capturas com dados de exemplo (contas, saldos e hunts fictícios).</sub>
 
 ---
 
@@ -158,7 +162,7 @@ Escreva o teste primeiro — o projeto é bem coberto, e isso é o que nos deixa
 
 ## Licença e créditos
 
-[MIT](LICENSE) — © 2026 Patrick Kenji. Você pode usar, copiar, modificar e distribuir.
+[MIT](LICENSE) — © 2026 Tickelicia. Você pode usar, copiar, modificar e distribuir.
 
 Feito com [.NET](https://dotnet.microsoft.com), [WPF](https://learn.microsoft.com/dotnet/desktop/wpf/), o
 [WebView2](https://developer.microsoft.com/microsoft-edge/webview2/) da Microsoft e o [Velopack](https://velopack.io) (instalador e

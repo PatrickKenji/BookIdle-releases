@@ -58,7 +58,7 @@ test('batalha sem mercado não é repassada', () => {
 test('do saldo leva só ouro, gemas e o relógio do servidor', () => {
   const page = load();
   const ws = page.open();
-  ws.receive({ t: 'welcome', admin: false, estado: { nick: 'Patrick', gold: 123, orbs: 4, servidorAgora: 99, token: 'segredo', diamonds: 1 } });
+  ws.receive({ t: 'welcome', admin: false, estado: { nick: 'Treinador', gold: 123, orbs: 4, servidorAgora: 99, token: 'segredo', diamonds: 1 } });
   ws.receive({ t: 'estado', estado: { gold: 100, selvagem: { nome: 'x' } } });
   const frames = page.frames();
   assert.deepEqual(frames[0], { t: 'welcome', estado: { gold: 123, orbs: 4, servidorAgora: 99 } });

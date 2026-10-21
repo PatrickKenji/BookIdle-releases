@@ -31,13 +31,13 @@ public class TwitchSettingsTests : IDisposable
         var store = new SettingsStore(path);
         var settings = AppSettings.CreateDefault();
         settings.Profiles[0].TwitchChannels = ["  #Canal ", "https://twitch.tv/Outro", "canal"];
-        settings.Profiles[0].Accounts[0] = settings.Profiles[0].Accounts[0] with { TwitchLogin = "patrick_tv" };
+        settings.Profiles[0].Accounts[0] = settings.Profiles[0].Accounts[0] with { TwitchLogin = "treinador_tv" };
 
         store.Save(settings);
         var loaded = store.Load();
 
         Assert.Equal(["canal", "outro"], loaded.Profiles[0].TwitchChannels);
-        Assert.Equal("patrick_tv", loaded.Profiles[0].Accounts[0].TwitchLogin);
+        Assert.Equal("treinador_tv", loaded.Profiles[0].Accounts[0].TwitchLogin);
     }
 
     [Fact]

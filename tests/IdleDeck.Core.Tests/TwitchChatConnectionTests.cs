@@ -112,7 +112,7 @@ public class TwitchChatConnectionTests
     }
 
     private static TwitchChatConnection Make(FakeIrcServer server, Func<CancellationToken, Task<string?>>? token = null, TimeSpan? retryDelay = null) =>
-        new("patrick", token ?? (_ => Task.FromResult<string?>("tok123")), server.Endpoint, retryDelay is { } d ? () => d : null);
+        new("treinador", token ?? (_ => Task.FromResult<string?>("tok123")), server.Endpoint, retryDelay is { } d ? () => d : null);
 
     [Fact]
     public async Task Connects_sends_credentials_and_joins_the_wanted_channels()
@@ -127,10 +127,10 @@ public class TwitchChatConnectionTests
         Assert.Equal(["canal1", "canal2"], chat.JoinedChannels.Order());
         var sent = server.Received;
         Assert.Contains("PASS oauth:tok123", sent);
-        Assert.Contains("NICK patrick", sent);
+        Assert.Contains("NICK treinador", sent);
         Assert.Contains("JOIN #canal1", sent);
         Assert.Contains("JOIN #canal2", sent);
-        Assert.True(sent.ToList().IndexOf("PASS oauth:tok123") < sent.ToList().IndexOf("NICK patrick"));
+        Assert.True(sent.ToList().IndexOf("PASS oauth:tok123") < sent.ToList().IndexOf("NICK treinador"));
     }
 
     [Fact]
