@@ -9,10 +9,10 @@ public partial class ProfileWindow : Window
     public ProfileWindow(GameProfile? existing = null)
     {
         InitializeComponent();
-        Title = existing is null ? "Novo perfil de jogo" : "Editar perfil";
+        Title = existing is null ? Loc.T("Novo perfil de jogo") : Loc.T("Editar perfil");
         if (existing is not null)
         {
-            Heading.Text = "EDITAR PERFIL";
+            Heading.Text = Loc.T("EDITAR PERFIL");
             NameBox.Text = existing.Name;
             UrlBox.Text = existing.Url;
             LimitBox.Text = existing.MaxAccounts.ToString();
@@ -28,11 +28,11 @@ public partial class ProfileWindow : Window
     {
         var name = NameBox.Text.Trim();
         var url = UrlBox.Text.Trim();
-        if (name.Length == 0) { ShowError("Dê um nome ao jogo."); return; }
-        if (!AppSettings.IsHttpUrl(url)) { ShowError("Endereço inválido. Use algo como https://pokeidle.io"); return; }
+        if (name.Length == 0) { ShowError(Loc.T("Dê um nome ao jogo.")); return; }
+        if (!AppSettings.IsHttpUrl(url)) { ShowError(Loc.T("Endereço inválido. Use algo como https://pokeidle.io")); return; }
         if (!int.TryParse(LimitBox.Text.Trim(), out var limit) || limit < 1 || limit > GameProfile.MaxAccountsLimit)
         {
-            ShowError($"O limite de contas vai de 1 a {GameProfile.MaxAccountsLimit}.");
+            ShowError(Loc.T("O limite de contas vai de 1 a {0}.", GameProfile.MaxAccountsLimit));
             return;
         }
 

@@ -40,19 +40,19 @@ public class VaultStore(string filePath)
         }
         catch (Exception e) when (e is IOException or UnauthorizedAccessException)
         {
-            throw new VaultUnlockException("Não foi possível ler o cofre.", e);
+            throw new VaultUnlockException(Loc.T("Não foi possível ler o cofre."), e);
         }
 
         try
         {
-            var json = data.Length == 0 ? throw new VaultUnlockException("Cofre vazio.") : data[0] switch
+            var json = data.Length == 0 ? throw new VaultUnlockException(Loc.T("Cofre vazio.")) : data[0] switch
             {
                 ModeDpapi => ProtectedData.Unprotect(data[1..], DpapiEntropy, DataProtectionScope.CurrentUser),
                 ModePassword => DecryptWithPassword(data, masterPassword ?? ""),
-                _ => throw new VaultUnlockException("Formato de cofre desconhecido."),
+                _ => throw new VaultUnlockException(Loc.T("Formato de cofre desconhecido.")),
             };
             return JsonSerializer.Deserialize<Dictionary<string, Credential>>(json)
-                   ?? throw new VaultUnlockException("Cofre vazio.");
+                   ?? throw new VaultUnlockException(Loc.T("Cofre vazio."));
         }
         catch (VaultUnlockException)
         {
@@ -60,7 +60,7 @@ public class VaultStore(string filePath)
         }
         catch (Exception e) when (e is CryptographicException or JsonException or ArgumentException)
         {
-            throw new VaultUnlockException("Senha mestra incorreta ou cofre corrompido.", e);
+            throw new VaultUnlockException(Loc.T("Senha mestra incorreta ou cofre corrompido."), e);
         }
     }
 
@@ -95,7 +95,7 @@ public class VaultStore(string filePath)
     private static byte[] DecryptWithPassword(byte[] data, string password)
     {
         const int header = 1 + SaltSize + NonceSize + TagSize;
-        if (data.Length < header) throw new VaultUnlockException("Cofre corrompido.");
+        if (data.Length < header) throw new VaultUnlockException(Loc.T("Cofre corrompido."));
 
         var salt = data.AsSpan(1, SaltSize);
         var nonce = data.AsSpan(1 + SaltSize, NonceSize);

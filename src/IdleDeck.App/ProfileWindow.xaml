@@ -1,27 +1,28 @@
 <Window x:Class="IdleDeck.App.ProfileWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:l="clr-namespace:IdleDeck.App.Localization"
         Style="{StaticResource ArcadeWindow}"
         Width="460" SizeToContent="Height" ResizeMode="NoResize" ShowInTaskbar="False"
         WindowStartupLocation="CenterOwner">
     <StackPanel Margin="20">
-        <TextBlock x:Name="Heading" Style="{StaticResource PixelTitle}" Text="NOVO PERFIL DE JOGO" />
+        <TextBlock x:Name="Heading" Style="{StaticResource PixelTitle}" Text="{l:T 'NOVO PERFIL DE JOGO'}" />
         <TextBlock Style="{StaticResource MutedText}" Margin="0,8,0,0" TextWrapping="Wrap"
-                   Text="Cada perfil é um jogo. As contas dele abrem neste endereço, cada uma com o próprio login." />
+                   Text="{l:T 'Cada perfil é um jogo. As contas dele abrem neste endereço, cada uma com o próprio login.'}" />
 
-        <TextBlock Text="Nome do jogo" Style="{StaticResource MutedText}" Margin="0,16,0,4" />
+        <TextBlock Text="{l:T 'Nome do jogo'}" Style="{StaticResource MutedText}" Margin="0,16,0,4" />
         <TextBox x:Name="NameBox" MaxLength="40" />
 
-        <TextBlock Text="Endereço (URL)" Style="{StaticResource MutedText}" Margin="0,12,0,4" />
-        <TextBox x:Name="UrlBox" Text="https://" />
+        <TextBlock Text="{l:T 'Endereço (URL)'}" Style="{StaticResource MutedText}" Margin="0,12,0,4" />
+        <TextBox x:Name="UrlBox" Text="{l:T 'https://'}" />
 
-        <TextBlock Text="Limite de contas (ex.: quantas o jogo permite por IP)" Style="{StaticResource MutedText}" Margin="0,12,0,4" />
+        <TextBlock Text="{l:T 'Limite de contas (ex.: quantas o jogo permite por IP)'}" Style="{StaticResource MutedText}" Margin="0,12,0,4" />
         <TextBox x:Name="LimitBox" Width="80" HorizontalAlignment="Left" Text="4" />
 
         <TextBlock x:Name="ErrorText" Foreground="{DynamicResource Err}" Margin="0,10,0,0" Visibility="Collapsed" TextWrapping="Wrap" />
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,18,0,0">
-            <Button Content="Cancelar" IsCancel="True" />
-            <Button Content="Salvar" Click="Save_Click" IsDefault="True" Style="{StaticResource ArcadePrimaryButton}" />
+            <Button Content="{l:T 'Cancelar'}" IsCancel="True" />
+            <Button Content="{l:T 'Salvar'}" Click="Save_Click" IsDefault="True" Style="{StaticResource ArcadePrimaryButton}" />
         </StackPanel>
     </StackPanel>
 </Window>

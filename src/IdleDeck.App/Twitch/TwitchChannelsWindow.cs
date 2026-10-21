@@ -25,14 +25,13 @@ public sealed class TwitchChannelsWindow : Window
         var panel = new StackPanel { Margin = new Thickness(20) };
         panel.Children.Add(new TextBlock
         {
-            Text = "BÔNUS DE LIVE (TWITCH)",
+            Text = Loc.T("BÔNUS DE LIVE (TWITCH)"),
             Style = (Style)Application.Current.Resources["SectionTitle"],
             Margin = new Thickness(0, 0, 0, 8),
         });
         var hint = new TextBlock
         {
-            Text = "Um canal por linha (pode colar o endereço, ex.: twitch.tv/canal). Cada conta que tiver a Twitch conectada " +
-                   "fica presente no chat desses canais em segundo plano — sem abrir vídeo nem chat na tela.",
+            Text = Loc.T("Um canal por linha (pode colar o endereço, ex.: twitch.tv/canal). Cada conta que tiver a Twitch conectada fica presente no chat desses canais em segundo plano — sem abrir vídeo nem chat na tela."),
             TextWrapping = TextWrapping.Wrap,
             FontSize = 12,
             Margin = new Thickness(0, 0, 0, 8),
@@ -50,8 +49,8 @@ public sealed class TwitchChannelsWindow : Window
         panel.Children.Add(_box);
 
         var buttons = new StackPanel { Orientation = Orientation.Horizontal, HorizontalAlignment = HorizontalAlignment.Right, Margin = new Thickness(0, 14, 0, 0) };
-        buttons.Children.Add(new Button { Content = "Cancelar", IsCancel = true });
-        var save = new Button { Content = "Salvar", IsDefault = true, Style = (Style)Application.Current.Resources["ArcadeSelectedButton"] };
+        buttons.Children.Add(new Button { Content = Loc.T("Cancelar"), IsCancel = true });
+        var save = new Button { Content = Loc.T("Salvar"), IsDefault = true, Style = (Style)Application.Current.Resources["ArcadeSelectedButton"] };
         save.Click += (_, _) =>
         {
             Channels = TwitchChannels.Normalize(_box.Text.Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries));

@@ -14,7 +14,7 @@ namespace IdleDeck.App.Modules.Hunt;
 /// </summary>
 public sealed class HuntPanel : DockPanel
 {
-    private static readonly CultureInfo Br = CultureInfo.GetCultureInfo("pt-BR");
+    private static CultureInfo Br => Loc.Culture;
 
     /// <summary>Largura da barra de rolagem do tema: o cabeçalho desconta o mesmo espaço que as linhas.</summary>
     private const double LarguraBarra = 8;
@@ -25,23 +25,23 @@ public sealed class HuntPanel : DockPanel
 
     private static readonly Coluna[] Colunas =
     [
-        new("Hunt", new GridLength(2.2, GridUnitType.Star), TipoColuna.Texto),
-        new("Nv", new GridLength(52), TipoColuna.Numero),
+        new(Loc.T("Hunt"), new GridLength(2.2, GridUnitType.Star), TipoColuna.Texto),
+        new(Loc.T("Nv"), new GridLength(52), TipoColuna.Numero),
         new("XP/h", new GridLength(1, GridUnitType.Star), TipoColuna.Numero),
-        new("Gold líq./h", new GridLength(1, GridUnitType.Star), TipoColuna.Numero),
-        new("Abates/h", new GridLength(84), TipoColuna.Numero),
-        new("s/abate", new GridLength(68), TipoColuna.Numero),
-        new("Poções/h", new GridLength(76), TipoColuna.Numero),
-        new("Risco", new GridLength(98), TipoColuna.Texto),
-        new("Golpe", new GridLength(1.4, GridUnitType.Star), TipoColuna.Texto),
+        new(Loc.T("Gold líq./h"), new GridLength(1, GridUnitType.Star), TipoColuna.Numero),
+        new(Loc.T("Abates/h"), new GridLength(84), TipoColuna.Numero),
+        new(Loc.T("s/abate"), new GridLength(68), TipoColuna.Numero),
+        new(Loc.T("Poções/h"), new GridLength(76), TipoColuna.Numero),
+        new(Loc.T("Risco"), new GridLength(98), TipoColuna.Texto),
+        new(Loc.T("Golpe"), new GridLength(1.4, GridUnitType.Star), TipoColuna.Texto),
     ];
 
     private readonly HuntModule _modulo;
     private readonly IModuleHostServices _host;
     private readonly UniformGrid _cards = new() { Columns = 2, Margin = new Thickness(0, 0, 0, 4) };
     private readonly StackPanel _barra = new() { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 0, 0, 6) };
-    private readonly StackPanel _tituloCards = Titulo("melhor hunt por conta");
-    private readonly StackPanel _tituloRanking = Titulo("ranking da conta escolhida");
+    private readonly StackPanel _tituloCards = Titulo(Loc.T("melhor hunt por conta"));
+    private readonly StackPanel _tituloRanking = Titulo(Loc.T("ranking da conta escolhida"));
     private readonly StackPanel _linhas = new();
     private readonly ScrollViewer _scroll = new() { VerticalScrollBarVisibility = ScrollBarVisibility.Visible };
     private readonly Border _cabecalho;
@@ -93,22 +93,22 @@ public sealed class HuntPanel : DockPanel
         {
             MostrarRanking(false);
             _linhas.Children.Add(Texto(contas.Count == 0
-                ? "Nenhuma conta neste perfil."
-                : "Abra o jogo nas contas e coloque um pokémon em campo: as hunts aparecem aqui.", muted: true));
+                ? Loc.T("Nenhuma conta neste perfil.")
+                : Loc.T("Abra o jogo nas contas e coloque um pokémon em campo: as hunts aparecem aqui."), muted: true));
             return;
         }
 
         MostrarRanking(true);
         _barra.Children.Add(Alternar("XP/h", !_porOuro, () => { _porOuro = false; Atualizar(); }));
-        _barra.Children.Add(Alternar("Gold/h líquido", _porOuro, () => { _porOuro = true; Atualizar(); }));
-        var bloq = new CheckBox { Content = "mostrar bloqueadas", IsChecked = _bloqueadas, Margin = new Thickness(12, 0, 0, 0), VerticalAlignment = VerticalAlignment.Center };
+        _barra.Children.Add(Alternar(Loc.T("Gold/h líquido"), _porOuro, () => { _porOuro = true; Atualizar(); }));
+        var bloq = new CheckBox { Content = Loc.T("mostrar bloqueadas"), IsChecked = _bloqueadas, Margin = new Thickness(12, 0, 0, 0), VerticalAlignment = VerticalAlignment.Center };
         bloq.Click += (_, _) => { _bloqueadas = bloq.IsChecked == true; Atualizar(); };
         _barra.Children.Add(bloq);
         if (r.Pokemon is { Aoe: true } pk) AdicionarAjusteAoe(sel, pk.AoeAlvos);
         _barra.Children.Add(Texto(Resumo(r), muted: true, margem: new Thickness(14, 0, 0, 0)));
 
         var lista = (_porOuro ? r.PorOuro : r.PorXp).Where(l => _bloqueadas || l.Liberada).ToList();
-        if (lista.Count == 0) _linhas.Children.Add(Texto("Nenhuma hunt liberada para o nível deste treinador.", muted: true));
+        if (lista.Count == 0) _linhas.Children.Add(Texto(Loc.T("Nenhuma hunt liberada para o nível deste treinador."), muted: true));
         for (var i = 0; i < lista.Count; i++) _linhas.Children.Add(LinhaDaHunt(lista[i], i));
     }
 
@@ -123,16 +123,16 @@ public sealed class HuntPanel : DockPanel
 
     private static string Resumo(HuntReport r)
     {
-        var partes = new List<string> { $"bônus XP ×{r.BonusXpPokemon.ToString("0.##", Br)}" };
-        if (r.BikeRaridade is { } bike) partes.Add($"bike {bike}");
-        partes.Add(r.Pocao is { } p ? $"poção: {p} (limiar {r.Limiar:P0})" : "sem poção automática");
-        if (r.DiaSazonal is { Length: > 0 } dia) partes.Add($"dia sazonal: {HuntReport.TipoEmPortugues(dia)}{(r.HeroiDoDia ? " (seu pokémon ×2)" : "")}");
+        var partes = new List<string> { Loc.T("bônus XP ×{0}", r.BonusXpPokemon.ToString("0.##", Br)) };
+        if (r.BikeRaridade is { } bike) partes.Add(Loc.T("bike {0}", bike));
+        partes.Add(r.Pocao is { } p ? Loc.T("poção: {0} (limiar {1:P0})", p, r.Limiar) : Loc.T("sem poção automática"));
+        if (r.DiaSazonal is { Length: > 0 } dia) partes.Add(Loc.T("dia sazonal: {0}", HuntReport.TipoEmPortugues(dia)) + (r.HeroiDoDia ? Loc.T(" (seu pokémon ×2)") : ""));
         return string.Join(" · ", partes);
     }
 
     private void AdicionarAjusteAoe(int contaId, int alvos)
     {
-        _barra.Children.Add(Texto("AoE: alvos por golpe", muted: true, margem: new Thickness(14, 0, 4, 0)));
+        _barra.Children.Add(Texto(Loc.T("AoE: alvos por golpe"), muted: true, margem: new Thickness(14, 0, 4, 0)));
         _barra.Children.Add(Botao("−", async () => await _modulo.DefinirAoeAsync(contaId, Math.Max(1, alvos - 1))));
         _barra.Children.Add(Texto(alvos.ToString(), bold: true, margem: new Thickness(6, 0, 6, 0)));
         _barra.Children.Add(Botao("+", async () => await _modulo.DefinirAoeAsync(contaId, Math.Min(16, alvos + 1))));
@@ -140,7 +140,7 @@ public sealed class HuntPanel : DockPanel
 
     private Border Card(int contaId)
     {
-        var nome = _host.NomeDaConta(contaId) ?? "Conta";
+        var nome = _host.NomeDaConta(contaId) ?? Loc.T("Conta");
         var corpo = new StackPanel();
         corpo.Children.Add(Texto(nome, bold: true));
         if (_modulo.Ultimos.TryGetValue(contaId, out var u) && u.Mensagem is HuntReport r)
@@ -150,20 +150,20 @@ public sealed class HuntPanel : DockPanel
             if (pk?.ZMove is { } z) selos.Add($"Z-{z}");
             if (pk?.Aoe == true) selos.Add($"AoE×{pk.AoeAlvos}");
             if (r.BikeRaridade is { } b) selos.Add($"🚲 {b}");
-            corpo.Children.Add(Texto($"{pk?.Nome ?? "—"} · Nv {pk?.Level}  {string.Join(" ", selos)}", muted: true));
+            corpo.Children.Add(Texto(Loc.T("{0} · Nv {1}  {2}", pk?.Nome ?? "—", pk?.Level, string.Join(" ", selos)), muted: true));
             var xp = r.PorXp.FirstOrDefault(l => l.Liberada && !l.Inviavel);
             var ouro = r.PorOuro.FirstOrDefault(l => l.Liberada && !l.Inviavel);
-            corpo.Children.Add(Texto(xp is null ? "XP: —" : $"★ XP: {xp.Nome} · {Compacto(xp.XpPokemonH)}/h", cor: "Yellow"));
-            corpo.Children.Add(Texto(ouro is null ? "Gold: —" : $"💰 Gold: {ouro.Nome} · {Compacto(ouro.LiquidoH)}/h", cor: "Green"));
-            corpo.Children.Add(Texto(u.Aviso ?? $"atualizado {Idade(u.Recebido)}", muted: true));
+            corpo.Children.Add(Texto(xp is null ? "XP: —" : Loc.T("★ XP: {0} · {1}/h", xp.Nome, Compacto(xp.XpPokemonH)), cor: "Yellow"));
+            corpo.Children.Add(Texto(ouro is null ? "Gold: —" : Loc.T("💰 Gold: {0} · {1}/h", ouro.Nome, Compacto(ouro.LiquidoH)), cor: "Green"));
+            corpo.Children.Add(Texto(u.Aviso ?? Loc.T("atualizado {0}", Idade(u.Recebido)), muted: true));
         }
         else if (u is { Mensagem: HuntStatus s })
         {
-            corpo.Children.Add(Texto(s.Texto, muted: true));
+            corpo.Children.Add(Texto(TextoDoStatus(s.Texto), muted: true));
         }
         else
         {
-            corpo.Children.Add(Texto("Esperando o jogo…", muted: true));
+            corpo.Children.Add(Texto(Loc.T("Esperando o jogo…"), muted: true));
         }
 
         var card = new Border
@@ -199,12 +199,12 @@ public sealed class HuntPanel : DockPanel
     /// <summary>Uma hunt do ranking. Linhas alternadas (zebra) para o olho não pular de linha.</summary>
     private Border LinhaDaHunt(HuntLine l, int indice)
     {
-        var nome = l.Nome + (l.Atual ? "  ◀ aqui" : "") + (l.Liberada ? "" : "  🔒");
-        var risco = l.Inviavel ? "não mata" : l.Risco switch
+        var nome = l.Nome + (l.Atual ? Loc.T("  ◀ aqui") : "") + (l.Liberada ? "" : "  🔒");
+        var risco = l.Inviavel ? Loc.T("não mata") : l.Risco switch
         {
-            HuntRisk.UmHit => "⚠ 1 golpe mata",
-            HuntRisk.Arriscado => "arriscado",
-            _ => "seguro",
+            HuntRisk.UmHit => Loc.T("⚠ 1 golpe mata"),
+            HuntRisk.Arriscado => Loc.T("arriscado"),
+            _ => Loc.T("seguro"),
         };
         var celulas = new UIElement[]
         {
@@ -229,9 +229,10 @@ public sealed class HuntPanel : DockPanel
             Child = Grade(celulas),
             Opacity = l.Liberada && !l.Inviavel ? 1 : 0.55,
         };
-        borda.ToolTip = l.Inviavel ? "O pokémon não consegue derrubar estes selvagens."
-            : $"Gold bruto {Compacto(l.OuroH)}/h − poções {Compacto(l.CustoPocoesH)} − revives {Compacto(l.CustoRevivesH)} − bolas {Compacto(l.CustoBolasH)}\n" +
-              $"XP do treinador {Compacto(l.XpTreinadorH)}/h · maior golpe do selvagem {l.MaiorGolpePct:P0} do seu HP · mortes/h {l.MortesH:0.##}";
+        borda.ToolTip = l.Inviavel ? Loc.T("O pokémon não consegue derrubar estes selvagens.")
+            : Loc.T("Gold bruto {0}/h − poções {1} − revives {2} − bolas {3}\nXP do treinador {4}/h · maior golpe do selvagem {5:P0} do seu HP · mortes/h {6:0.##}",
+                Compacto(l.OuroH), Compacto(l.CustoPocoesH), Compacto(l.CustoRevivesH), Compacto(l.CustoBolasH),
+                Compacto(l.XpTreinadorH), l.MaiorGolpePct, l.MortesH);
         // Realce ao passar o mouse (a zebra volta quando ele sai).
         var realce = Cor("Pill");
         borda.MouseEnter += (_, _) => borda.Background = realce;
@@ -295,16 +296,28 @@ public sealed class HuntPanel : DockPanel
         var a = Math.Abs(v);
         return a switch
         {
-            >= 1e9 => (v / 1e9).ToString("0.#", Br) + " bi",
-            >= 1e6 => (v / 1e6).ToString("0.#", Br) + " mi",
-            >= 1e3 => (v / 1e3).ToString("0.#", Br) + " mil",
+            >= 1e9 => (v / 1e9).ToString("0.#", Br) + Loc.T(" bi"),
+            >= 1e6 => (v / 1e6).ToString("0.#", Br) + Loc.T(" mi"),
+            >= 1e3 => (v / 1e3).ToString("0.#", Br) + Loc.T(" mil"),
             _ => v.ToString("0", Br),
         };
+    }
+
+    /// <summary>Os avisos vêm em português do script da página do jogo; os que levam um detalhe no fim se reconhecem pelo começo.</summary>
+    private static string TextoDoStatus(string texto)
+    {
+        if (texto == "Coloque um pokémon em campo") return Loc.T("Coloque um pokémon em campo");
+        if (texto == "Esperando o jogo conectar…") return Loc.T("Esperando o jogo conectar…");
+        if (texto.StartsWith("Não consegui ler o estado do jogo (estado-delta): ", StringComparison.Ordinal))
+            return Loc.T("Não consegui ler o estado do jogo (estado-delta): {0}", texto["Não consegui ler o estado do jogo (estado-delta): ".Length..]);
+        if (texto.StartsWith("Erro no cálculo: ", StringComparison.Ordinal))
+            return Loc.T("Erro no cálculo: {0}", texto["Erro no cálculo: ".Length..]);
+        return texto;
     }
 
     private static string Idade(DateTime quando)
     {
         var s = (DateTime.Now - quando).TotalSeconds;
-        return s < 60 ? "agora" : s < 3600 ? $"há {s / 60:0} min" : $"há {s / 3600:0} h";
+        return s < 60 ? Loc.T("agora") : s < 3600 ? Loc.T("há {0:0} min", s / 60) : Loc.T("há {0:0} h", s / 3600);
     }
 }

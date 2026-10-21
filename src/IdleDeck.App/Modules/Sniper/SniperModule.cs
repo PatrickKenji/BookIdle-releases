@@ -53,7 +53,7 @@ public sealed class SniperModule : IModuleView
     public string UrlPattern => "pokeidle.io";
     public IReadOnlyList<string> AllowedPaths => ["/", "/app"];
     public string? InjectedScript { get; } = LoadBridgeScript();
-    public string? Description => "Compra sozinho, em segundo plano, o que bate com as regras de cada conta. As contas continuam jogando.";
+    public string? Description => Loc.T("Compra sozinho, em segundo plano, o que bate com as regras de cada conta. As contas continuam jogando.");
 
     public ItemCatalog? Catalog { get; private set; }
 
@@ -68,8 +68,9 @@ public sealed class SniperModule : IModuleView
         get
         {
             var watching = _runs.Values.Count(r => r.Session is not null);
-            if (watching == 0 && _totalBought == 0) return "desligado";
-            return $"{watching} conta{(watching == 1 ? "" : "s")} vigiando · {_totalBought} compra{(_totalBought == 1 ? "" : "s")}";
+            if (watching == 0 && _totalBought == 0) return Loc.T("desligado");
+            return Loc.T(watching == 1 ? "{0} conta vigiando" : "{0} contas vigiando", watching) + " · "
+                + Loc.T(_totalBought == 1 ? "{0} compra" : "{0} compras", _totalBought);
         }
     }
 
@@ -81,7 +82,7 @@ public sealed class SniperModule : IModuleView
 
     public IReadOnlyList<int> Accounts => _host.TodasAsContasDoJogo("pokeidle.io");
 
-    public string AccountName(int id) => _host.NomeDaConta(id) ?? $"Conta {id}";
+    public string AccountName(int id) => _host.NomeDaConta(id) ?? Loc.T("Conta {0}", id);
 
     public SniperAccountConfig Config(int id) => _host.SniperDaConta(id);
 
@@ -161,7 +162,7 @@ public sealed class SniperModule : IModuleView
         run.Session = session;
         run.Cts = cts;
         _ = session.RunAsync(cts.Token);
-        AddFeed(run, FeedKind.Info, "Sniper ligado.");
+        AddFeed(run, FeedKind.Info, Loc.T("Sniper ligado."));
     }
 
     private void Stop(AccountRun run)
@@ -169,7 +170,7 @@ public sealed class SniperModule : IModuleView
         run.Cts?.Cancel();
         run.Cts = null;
         run.Session = null;
-        AddFeed(run, FeedKind.Info, "Sniper desligado.");
+        AddFeed(run, FeedKind.Info, Loc.T("Sniper desligado."));
     }
 
     private void AddFeed(AccountRun run, FeedKind kind, string text)
@@ -207,14 +208,14 @@ public sealed class SniperModule : IModuleView
         {
             run.LastBought = DateTime.Now;
             module._totalBought++;
-            module._host.Notificar($"Sniper — {module.AccountName(id)}", $"Comprou {offer.Name} por {total:N0} {(offer.Currency == Currency.Gold ? "coins" : "gemas")}.");
+            module._host.Notificar($"Sniper — {module.AccountName(id)}", Loc.T("Comprou {0} por {1} {2}.", offer.Name, total.ToString("N0", Loc.Culture), offer.Currency == Currency.Gold ? Loc.T("coins") : Loc.T("gemas")));
             module.SummaryChanged?.Invoke(module, EventArgs.Empty);
         }
 
         public void Disabled(string reason)
         {
             run.Error = true;
-            module._host.Notificar($"Sniper — {module.AccountName(id)}", "Desligado depois de falhas seguidas. Confira o feed.");
+            module._host.Notificar($"Sniper — {module.AccountName(id)}", Loc.T("Desligado depois de falhas seguidas. Confira o feed."));
         }
 
         public void ConfigChanged()

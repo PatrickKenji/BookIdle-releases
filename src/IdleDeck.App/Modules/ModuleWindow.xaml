@@ -1,8 +1,9 @@
 <Window x:Class="IdleDeck.App.Modules.ModuleWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:l="clr-namespace:IdleDeck.App.Localization"
         xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework"
-        Title="Módulo" Width="1220" Height="800" MinWidth="820" MinHeight="480"
+        Title="{l:T 'Módulo'}" Width="1220" Height="800" MinWidth="820" MinHeight="480"
         Icon="/Resources/AppIcon.ico"
         Style="{StaticResource ArcadeWindow}" ShowInTaskbar="True" ResizeMode="CanResize"
         WindowStyle="None" WindowStartupLocation="CenterOwner">
@@ -21,9 +22,9 @@
                     BorderThickness="0,0,0,3" Padding="14,12,10,12" MouseLeftButtonDown="Header_MouseDown">
                 <DockPanel>
                     <Button DockPanel.Dock="Right" Content="✕" Style="{StaticResource IconButton}" FontSize="15"
-                            Click="Close_Click" ToolTip="Fechar (Esc)" VerticalAlignment="Top" />
+                            Click="Close_Click" ToolTip="{l:T 'Fechar (Esc)'}" VerticalAlignment="Top" />
                     <Button DockPanel.Dock="Right" Content="—" Style="{StaticResource IconButton}" FontSize="15"
-                            Click="Minimize_Click" ToolTip="Minimizar só esta janela" VerticalAlignment="Top" />
+                            Click="Minimize_Click" ToolTip="{l:T 'Minimizar só esta janela'}" VerticalAlignment="Top" />
                     <StackPanel>
                         <TextBlock x:Name="TitleText" Style="{StaticResource PixelTitle}" FontSize="11"
                                    Foreground="{DynamicResource Text}" />

@@ -40,27 +40,27 @@ public static class SniperRules
     /// <summary>Null se a regra está certa; senão o motivo, em português.</summary>
     public static string? Validate(SniperRule rule)
     {
-        if (rule.MaxGold < 0 || rule.MaxOrb < 0) return "Os tetos não podem ser negativos.";
-        if (rule.MaxQty < 0) return "A quantidade máxima não pode ser negativa.";
+        if (rule.MaxGold < 0 || rule.MaxOrb < 0) return Loc.T("Os tetos não podem ser negativos.");
+        if (rule.MaxQty < 0) return Loc.T("A quantidade máxima não pode ser negativa.");
         var hasCeiling = rule.MaxGold > 0 || rule.MaxOrb > 0;
         switch (rule.Kind)
         {
             case RuleKind.Item:
-                if (rule.ItemId is not > 0) return "Escolha um item.";
-                return hasCeiling ? null : "Defina um teto em coins ou em gemas.";
+                if (rule.ItemId is not > 0) return Loc.T("Escolha um item.");
+                return hasCeiling ? null : Loc.T("Defina um teto em coins ou em gemas.");
             case RuleKind.Pokemon:
-                if (rule.SpeciesId is not > 0) return "Escolha um Pokémon.";
-                return hasCeiling ? null : "Defina um teto em coins ou em gemas.";
+                if (rule.SpeciesId is not > 0) return Loc.T("Escolha um Pokémon.");
+                return hasCeiling ? null : Loc.T("Defina um teto em coins ou em gemas.");
             case RuleKind.AnyShiny:
-                if (rule.MaxGold > 0) return "Shiny só se compra com gemas.";
-                return rule.MaxOrb > 0 ? null : "Defina o teto em gemas.";
+                if (rule.MaxGold > 0) return Loc.T("Shiny só se compra com gemas.");
+                return rule.MaxOrb > 0 ? null : Loc.T("Defina o teto em gemas.");
             case RuleKind.AnyP5:
-                return hasCeiling ? null : "Defina um teto em coins ou em gemas.";
+                return hasCeiling ? null : Loc.T("Defina um teto em coins ou em gemas.");
             case RuleKind.MinNota:
-                if (!(rule.MinNota > 0)) return "Defina a nota mínima.";
-                return hasCeiling ? null : "Defina um teto em coins ou em gemas.";
+                if (!(rule.MinNota > 0)) return Loc.T("Defina a nota mínima.");
+                return hasCeiling ? null : Loc.T("Defina um teto em coins ou em gemas.");
             default:
-                return "Tipo de regra desconhecido.";
+                return Loc.T("Tipo de regra desconhecido.");
         }
     }
 
@@ -69,8 +69,8 @@ public static class SniperRules
     {
         if (Validate(rule) is { } invalid) return invalid;
         if (IsRadar(rule.Kind))
-            return config.Rules.Any(r => r.Kind == rule.Kind) ? "Esse radar já existe nesta conta." : null;
-        return config.Rules.Count(r => !IsRadar(r.Kind)) >= MaxRules ? $"No máximo {MaxRules} regras por conta." : null;
+            return config.Rules.Any(r => r.Kind == rule.Kind) ? Loc.T("Esse radar já existe nesta conta.") : null;
+        return config.Rules.Count(r => !IsRadar(r.Kind)) >= MaxRules ? Loc.T("No máximo {0} regras por conta.", MaxRules) : null;
     }
 
     /// <summary>Unidades que a regra ainda pode comprar (<see cref="long.MaxValue"/> se não tem limite).</summary>

@@ -48,7 +48,7 @@ public partial class VaultWindow : Window
                 Style = (Style)FindResource("SectionTitle"),
             });
             if (profile.Accounts.Count == 0)
-                ProfilesPanel.Children.Add(new TextBlock { Text = "Nenhuma conta.", Style = (Style)FindResource("MutedText") });
+                ProfilesPanel.Children.Add(new TextBlock { Text = Loc.T("Nenhuma conta."), Style = (Style)FindResource("MutedText") });
             foreach (var account in profile.Accounts)
                 AddRow(profile, account, credentials.GetValueOrDefault(account.ProfileName));
         }
@@ -82,14 +82,14 @@ public partial class VaultWindow : Window
         {
             Profile = profile,
             Account = account,
-            Password = Choice("Senha", LoginMethod.Password),
+            Password = Choice(Loc.T("Senha"), LoginMethod.Password),
             Google = Choice("Google", LoginMethod.Google),
-            None = Choice("Nenhum", LoginMethod.None),
+            None = Choice(Loc.T("Nenhum"), LoginMethod.None),
             User = user,
             Pass = pass,
             Email = email,
-            PasswordFields = Labeled(("Usuário / e-mail", user), ("Senha", pass)),
-            GoogleFields = Labeled(("E-mail da conta Google", email)),
+            PasswordFields = Labeled((Loc.T("Usuário / e-mail"), user), (Loc.T("Senha"), pass)),
+            GoogleFields = Labeled((Loc.T("E-mail da conta Google"), email)),
         };
 
         if (credential is not null)
@@ -152,8 +152,8 @@ public partial class VaultWindow : Window
         string? master = null;
         if (UseMaster.IsChecked == true)
         {
-            if (Master.Password.Length == 0) { ShowError("Digite a senha mestra."); return; }
-            if (Master.Password != MasterConfirm.Password) { ShowError("As senhas mestras não conferem."); return; }
+            if (Master.Password.Length == 0) { ShowError(Loc.T("Digite a senha mestra.")); return; }
+            if (Master.Password != MasterConfirm.Password) { ShowError(Loc.T("As senhas mestras não conferem.")); return; }
             master = Master.Password;
         }
 
@@ -166,13 +166,13 @@ public partial class VaultWindow : Window
                     credentials[row.Account.ProfileName] = new Credential(row.User.Text.Trim(), row.Pass.Password);
                     break;
                 case LoginMethod.Password:
-                    ShowError($"{row.Account.Name}: preencha usuário e senha, ou escolha Nenhum.");
+                    ShowError(Loc.T("{0}: preencha usuário e senha, ou escolha Nenhum.", row.Account.Name));
                     return;
                 case LoginMethod.Google when row.Email.Text.Trim().Contains('@'):
                     credentials[row.Account.ProfileName] = new Credential(row.Email.Text.Trim(), "");
                     break;
                 case LoginMethod.Google:
-                    ShowError($"{row.Account.Name}: digite o e-mail da conta Google.");
+                    ShowError(Loc.T("{0}: digite o e-mail da conta Google.", row.Account.Name));
                     return;
             }
             SavedMethods[row.Account.ProfileName] = row.Method;
@@ -184,7 +184,7 @@ public partial class VaultWindow : Window
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or CryptographicException)
         {
-            ShowError($"Não foi possível salvar o cofre: {ex.Message}");
+            ShowError(Loc.T("Não foi possível salvar o cofre: {0}", ex.Message));
             return;
         }
 
@@ -195,7 +195,7 @@ public partial class VaultWindow : Window
 
     private void Delete_Click(object sender, RoutedEventArgs e)
     {
-        if (!ArcadeDialog.Show(this, "Apagar cofre", "Apagar todas as credenciais salvas? Isso não pode ser desfeito.",
+        if (!ArcadeDialog.Show(this, Loc.T("Apagar cofre"), Loc.T("Apagar todas as credenciais salvas? Isso não pode ser desfeito."),
                 ArcadeDialogButtons.YesNo, ArcadeDialogKind.Warning)) return;
 
         try
@@ -204,7 +204,7 @@ public partial class VaultWindow : Window
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
-            ShowError($"Não foi possível apagar o cofre: {ex.Message}");
+            ShowError(Loc.T("Não foi possível apagar o cofre: {0}", ex.Message));
             return;
         }
         Deleted = true;

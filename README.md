@@ -1,5 +1,7 @@
 # BookIdle
 
+**🌐 Language / Idioma / Idioma:** **Português** · [English](README.en.md) · [Español](README.es.md)
+
 **Gerenciador de contas e ferramentas para o [pokeidle.io](https://pokeidle.io)** — várias contas lado a lado, voto no TopIdle, bônus de
 live da Twitch, ranking de hunts e sniper do mercado. Programa de Windows, de código aberto e gratuito.
 
@@ -18,7 +20,7 @@ live da Twitch, ranking de hunts e sniper do mercado. Programa de Windows, de c�
   <img src="docs/img/sniper.png" alt="Painel do Sniper do mercado: nova regra, radar de Pokémon, regras ativas, proteção de saldo e feed" width="760">
 </p>
 
-<sub>Capturas com dados de exemplo (contas, saldos e hunts fictícios).</sub>
+<sub>Capturas com dados de exemplo (contas, saldos e hunts fictícios). O próprio app está disponível em português, inglês e espanhol.</sub>
 
 ---
 

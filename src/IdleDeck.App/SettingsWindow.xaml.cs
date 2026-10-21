@@ -20,16 +20,24 @@ public partial class SettingsWindow : Window
         Extensions.IsChecked = settings.ExtensionsEnabled;
         BlockedDomains.Text = string.Join(Environment.NewLine, settings.BlockedDomains);
         StartWithWindows.IsChecked = settings.StartWithWindows;
+
+        LanguageBox.ItemsSource = new[] { (Code: Loc.Auto, Name: Loc.T("Automático (idioma do Windows)")) }
+            .Concat(Loc.Languages)
+            .Select(l => new LanguageChoice(l.Code, l.Name))
+            .ToList();
+        LanguageBox.SelectedValue = settings.Language;
     }
 
-    /// <summary>True se mudou algo que só vale depois de reiniciar o navegador.</summary>
+    private sealed record LanguageChoice(string Code, string Name);
+
+    /// <summary>True se mudou algo que só vale depois de reiniciar o app (navegador, idioma).</summary>
     public bool RestartRequired { get; private set; }
 
     private void Save_Click(object sender, RoutedEventArgs e)
     {
         if (!int.TryParse(MemoryLimit.Text.Trim(), out var limit) || limit < 100)
         {
-            ShowError("Limite de memória: informe um número a partir de 100 MB.");
+            ShowError(Loc.T("Limite de memória: informe um número a partir de 100 MB."));
             return;
         }
 
@@ -38,7 +46,9 @@ public partial class SettingsWindow : Window
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .ToList();
 
-        RestartRequired = _settings.DisableBackgroundThrottling != (NoThrottling.IsChecked == true)
+        var language = LanguageBox.SelectedValue as string ?? Loc.Auto;
+        RestartRequired = _settings.Language != language
+                          || _settings.DisableBackgroundThrottling != (NoThrottling.IsChecked == true)
                           || _settings.ExtensionsEnabled != (Extensions.IsChecked == true)
                           || !_settings.BlockedDomains.SequenceEqual(blocked);
 
@@ -48,7 +58,7 @@ public partial class SettingsWindow : Window
         }
         catch (Exception ex) when (ex is UnauthorizedAccessException or System.Security.SecurityException)
         {
-            ShowError($"Não foi possível alterar o início com o Windows: {ex.Message}");
+            ShowError(Loc.T("Não foi possível alterar o início com o Windows: {0}", ex.Message));
             return;
         }
 
@@ -58,6 +68,7 @@ public partial class SettingsWindow : Window
         _settings.ExtensionsEnabled = Extensions.IsChecked == true;
         _settings.BlockedDomains = blocked;
         _settings.StartWithWindows = StartWithWindows.IsChecked == true;
+        _settings.Language = language;
         DialogResult = true;
     }
 

@@ -5,7 +5,7 @@ public static class VoteCooldown
 {
     public const string VoteUrl = "https://topidle.com/jogo/pokeidle-io-5f9969";
     public static readonly TimeSpan Interval = TimeSpan.FromHours(24);
-    private const string Plain = "Votar no TopIdle";
+    private static string Plain => Loc.T("Votar no TopIdle");
 
     /// <summary>
     /// Quanto falta para poder votar de novo. Zero se nunca votou ou se já passou o intervalo;
@@ -24,8 +24,8 @@ public static class VoteCooldown
     {
         var remaining = Remaining(lastVoteUtc, nowUtc);
         if (remaining == TimeSpan.Zero) return Plain;
-        if (remaining < TimeSpan.FromHours(1)) return $"Votar em {Math.Ceiling(remaining.TotalMinutes):0} min";
-        return $"Votar em {Math.Ceiling(remaining.TotalHours):0} h";
+        if (remaining < TimeSpan.FromHours(1)) return Loc.T("Votar em {0:0} min", Math.Ceiling(remaining.TotalMinutes));
+        return Loc.T("Votar em {0:0} h", Math.Ceiling(remaining.TotalHours));
     }
 
     /// <summary>"Votar no TopIdle", "Votar no TopIdle (em 5 h)" (horas para cima) ou "(em 40 min)".</summary>
@@ -33,7 +33,7 @@ public static class VoteCooldown
     {
         var remaining = Remaining(lastVoteUtc, nowUtc);
         if (remaining == TimeSpan.Zero) return Plain;
-        if (remaining < TimeSpan.FromHours(1)) return $"{Plain} (em {Math.Ceiling(remaining.TotalMinutes):0} min)";
-        return $"{Plain} (em {Math.Ceiling(remaining.TotalHours):0} h)";
+        if (remaining < TimeSpan.FromHours(1)) return Loc.T("Votar no TopIdle (em {0:0} min)", Math.Ceiling(remaining.TotalMinutes));
+        return Loc.T("Votar no TopIdle (em {0:0} h)", Math.Ceiling(remaining.TotalHours));
     }
 }

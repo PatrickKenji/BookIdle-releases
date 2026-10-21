@@ -45,9 +45,9 @@ public sealed class AccountView : DockPanel
         AttachWeb();
 
         _headerText = new TextBlock { FontSize = 11, FontWeight = FontWeights.Bold, VerticalAlignment = VerticalAlignment.Center };
-        var expand = HeaderButton("⛶", "Expandir: abre esta conta nas Abas");
+        var expand = HeaderButton("⛶", Loc.T("Expandir: abre esta conta nas Abas"));
         expand.Click += (_, _) => ExpandRequested?.Invoke(this, EventArgs.Empty);
-        _muteButton = HeaderButton("🔊", "Mutar esta conta");
+        _muteButton = HeaderButton("🔊", Loc.T("Mutar esta conta"));
         _muteButton.Click += (_, _) => MuteToggleRequested?.Invoke(this, EventArgs.Empty);
         var bar = new DockPanel { LastChildFill = true };
         foreach (var button in new[] { expand, _muteButton })
@@ -64,7 +64,7 @@ public sealed class AccountView : DockPanel
             Background = (Brush)Application.Current.Resources["Card"],
             Cursor = Cursors.Hand,
             Child = bar,
-            ToolTip = "Clique para dar destaque a esta conta",
+            ToolTip = Loc.T("Clique para dar destaque a esta conta"),
         };
         _header.MouseLeftButtonUp += (_, _) => HeaderClicked?.Invoke(this, EventArgs.Empty);
         SetDock(_header, Dock.Top);
@@ -233,7 +233,7 @@ public sealed class AccountView : DockPanel
     {
         _headerText.Text = Config.Name;
         _muteButton.Content = Config.Muted ? "🔇" : "🔊";
-        _muteButton.ToolTip = Config.Muted ? "Tirar o mudo desta conta" : "Mutar esta conta";
+        _muteButton.ToolTip = Config.Muted ? Loc.T("Tirar o mudo desta conta") : Loc.T("Mutar esta conta");
     }
 
     /// <summary>Botão da barrinha: pequeno e sem moldura; o clique não vira "dar destaque".</summary>

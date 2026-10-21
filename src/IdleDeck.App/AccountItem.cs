@@ -70,20 +70,20 @@ public sealed class AccountItem : INotifyPropertyChanged
     /// <summary>"Google · Online", "Senha · Precisa de você"…</summary>
     public string Subtitle => Login switch
     {
-        LoginMethod.Password => $"Senha · {StatusText}",
-        LoginMethod.Google => $"Google · {StatusText}",
+        LoginMethod.Password => Loc.T("Senha · {0}", StatusText),
+        LoginMethod.Google => Loc.T("Google · {0}", StatusText),
         _ => StatusText,
     };
 
     public string StatusText => Status switch
     {
-        AccountStatus.Loading => "Carregando",
-        AccountStatus.Online => "Online",
-        AccountStatus.Offline => "Sem conexão",
-        AccountStatus.Reloading => "Recarregando",
-        AccountStatus.LoginError => "Erro de login",
-        AccountStatus.NeedsUser => "Precisa de você",
-        _ => "Erro",
+        AccountStatus.Loading => Loc.T("Carregando"),
+        AccountStatus.Online => Loc.T("Online"),
+        AccountStatus.Offline => Loc.T("Sem conexão"),
+        AccountStatus.Reloading => Loc.T("Recarregando"),
+        AccountStatus.LoginError => Loc.T("Erro de login"),
+        AccountStatus.NeedsUser => Loc.T("Precisa de você"),
+        _ => Loc.T("Erro"),
     };
 
     public Brush StatusBrush => (Brush)Application.Current.Resources[Status switch
@@ -138,13 +138,13 @@ public sealed class AccountItem : INotifyPropertyChanged
     public string TwitchTooltip => _twitchTooltip;
 
     /// <summary>Texto do botão da Twitch na linha da conta: chama para conectar, ou mostra com qual login está ligada.</summary>
-    public string TwitchButtonLabel => TwitchLogin is null ? "Conectar Twitch" : $"Twitch: {TwitchLogin}";
+    public string TwitchButtonLabel => TwitchLogin is null ? Loc.T("Conectar Twitch") : Loc.T("Twitch: {0}", TwitchLogin);
 
     public bool TwitchConnected => TwitchLogin is not null;
 
-    public string TwitchConnectLabel => TwitchLogin is null ? "Conectar Twitch…" : "Reconectar Twitch…";
+    public string TwitchConnectLabel => TwitchLogin is null ? Loc.T("Conectar Twitch…") : Loc.T("Reconectar Twitch…");
 
-    public string TwitchDisconnectLabel => $"Desconectar Twitch ({TwitchLogin})";
+    public string TwitchDisconnectLabel => Loc.T("Desconectar Twitch ({0})", TwitchLogin);
 
     public Visibility TwitchDisconnectVisibility => TwitchLogin is null ? Visibility.Collapsed : Visibility.Visible;
 
@@ -201,9 +201,9 @@ public sealed class AccountItem : INotifyPropertyChanged
         set { if (Set(ref _isProbing, value)) OnPropertyChanged(nameof(ProbeLabel)); }
     }
 
-    public string ProbeLabel => IsProbing ? "◉  Diagnóstico do mercado: ligado (clique para silenciar)" : "◎  Diagnóstico do mercado";
+    public string ProbeLabel => IsProbing ? Loc.T("◉  Diagnóstico do mercado: ligado (clique para silenciar)") : Loc.T("◎  Diagnóstico do mercado");
 
-    public string MuteLabel => IsMuted ? "🔊  Tirar o mudo" : "🔇  Mutar";
+    public string MuteLabel => IsMuted ? Loc.T("🔊  Tirar o mudo") : Loc.T("🔇  Mutar");
 
     public bool IsRenaming
     {

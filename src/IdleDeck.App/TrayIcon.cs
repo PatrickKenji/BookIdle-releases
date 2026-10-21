@@ -13,11 +13,11 @@ public sealed class TrayIcon : IDisposable
         var menu = new Forms.ContextMenuStrip();
         menu.Items.Add(new Forms.ToolStripMenuItem($"BookIdle {version}") { Enabled = false });
         menu.Items.Add(new Forms.ToolStripSeparator());
-        menu.Items.Add("Abrir", null, (_, _) => open());
-        menu.Items.Add("Resetar tudo", null, (_, _) => resetAll());
-        menu.Items.Add("Verificar atualizações", null, (_, _) => checkUpdates());
+        menu.Items.Add(Loc.T("Abrir"), null, (_, _) => open());
+        menu.Items.Add(Loc.T("Resetar tudo"), null, (_, _) => resetAll());
+        menu.Items.Add(Loc.T("Verificar atualizações"), null, (_, _) => checkUpdates());
         menu.Items.Add(new Forms.ToolStripSeparator());
-        menu.Items.Add("Sair", null, (_, _) => exit());
+        menu.Items.Add(Loc.T("Sair"), null, (_, _) => exit());
 
         _icon = new Forms.NotifyIcon
         {

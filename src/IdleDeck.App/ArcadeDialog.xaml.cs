@@ -27,7 +27,7 @@ public partial class ArcadeDialog : Window
         dialog.KindIcon.Foreground = (System.Windows.Media.Brush)dialog.FindResource(kind == ArcadeDialogKind.Error ? "Err" : "Yellow");
         if (buttons == ArcadeDialogButtons.YesNo)
         {
-            dialog.YesButton.Content = "Sim";
+            dialog.YesButton.Content = Loc.T("Sim");
             dialog.NoButton.Visibility = Visibility.Visible;
         }
 

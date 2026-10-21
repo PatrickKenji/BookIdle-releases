@@ -1,32 +1,36 @@
 <Window x:Class="IdleDeck.App.SettingsWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Configurações" Width="640" SizeToContent="Height" ResizeMode="NoResize"
+        xmlns:l="clr-namespace:IdleDeck.App.Localization"
+        Title="{l:T 'Configurações'}" Width="640" SizeToContent="Height" ResizeMode="NoResize"
         WindowStartupLocation="CenterOwner" Style="{StaticResource ArcadeWindow}" ShowInTaskbar="False">
     <StackPanel Margin="18">
-        <TextBlock Text="MEMÓRIA" Style="{StaticResource SectionTitle}" Margin="0,0,0,8" />
+        <TextBlock Text="{l:T 'MEMÓRIA'}" Style="{StaticResource SectionTitle}" Margin="0,0,0,8" />
         <StackPanel Orientation="Horizontal" Margin="0,6,0,0">
-            <CheckBox x:Name="AutoReset" Content="Recarregar sozinha a conta que passar de" VerticalAlignment="Center" />
+            <CheckBox x:Name="AutoReset" Content="{l:T 'Recarregar sozinha a conta que passar de'}" VerticalAlignment="Center" />
             <TextBox x:Name="MemoryLimit" Width="70" Margin="8,0" VerticalAlignment="Center" />
             <TextBlock Text="MB" VerticalAlignment="Center" />
         </StackPanel>
         <TextBlock Foreground="{DynamicResource Muted}" FontSize="11" Margin="20,2,0,0" TextWrapping="Wrap"
-                   Text="Recarregar não desloga. Cada conta é recarregada no máximo uma vez a cada 10 minutos." />
+                   Text="{l:T 'Recarregar não desloga. Cada conta é recarregada no máximo uma vez a cada 10 minutos.'}" />
 
-        <TextBlock Text="NAVEGADOR (VALE AO REINICIAR O APP)" Style="{StaticResource SectionTitle}" />
-        <CheckBox x:Name="NoThrottling" Content="Não desacelerar contas escondidas (usa um pouco mais de CPU)" />
-        <CheckBox x:Name="Extensions" Content="Permitir extensões do navegador" />
-        <TextBlock Text="Domínios bloqueados (um por linha; subdomínios inclusos)" Foreground="{DynamicResource Muted}"
+        <TextBlock Text="{l:T 'NAVEGADOR (VALE AO REINICIAR O APP)'}" Style="{StaticResource SectionTitle}" />
+        <CheckBox x:Name="NoThrottling" Content="{l:T 'Não desacelerar contas escondidas (usa um pouco mais de CPU)'}" />
+        <CheckBox x:Name="Extensions" Content="{l:T 'Permitir extensões do navegador'}" />
+        <TextBlock Text="{l:T 'Domínios bloqueados (um por linha; subdomínios inclusos)'}" Foreground="{DynamicResource Muted}"
                    FontSize="11" Margin="0,8,0,2" />
         <TextBox x:Name="BlockedDomains" AcceptsReturn="True" Height="90" VerticalScrollBarVisibility="Auto" />
 
-        <TextBlock Text="SISTEMA" Style="{StaticResource SectionTitle}" />
-        <CheckBox x:Name="StartWithWindows" Content="Iniciar com o Windows (minimizado na bandeja)" />
+        <TextBlock Text="{l:T 'IDIOMA (VALE AO REINICIAR O APP)'}" Style="{StaticResource SectionTitle}" />
+        <ComboBox x:Name="LanguageBox" HorizontalAlignment="Left" MinWidth="260" DisplayMemberPath="Name" SelectedValuePath="Code" />
+
+        <TextBlock Text="{l:T 'SISTEMA'}" Style="{StaticResource SectionTitle}" />
+        <CheckBox x:Name="StartWithWindows" Content="{l:T 'Iniciar com o Windows (minimizado na bandeja)'}" />
 
         <TextBlock x:Name="ErrorText" Foreground="{DynamicResource Err}" Margin="0,8,0,0" Visibility="Collapsed" TextWrapping="Wrap" />
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,14,0,0">
-            <Button Content="Cancelar" IsCancel="True" />
-            <Button Content="Salvar" Click="Save_Click" Style="{StaticResource ArcadeSelectedButton}" IsDefault="True" />
+            <Button Content="{l:T 'Cancelar'}" IsCancel="True" />
+            <Button Content="{l:T 'Salvar'}" Click="Save_Click" Style="{StaticResource ArcadeSelectedButton}" IsDefault="True" />
         </StackPanel>
     </StackPanel>
 </Window>

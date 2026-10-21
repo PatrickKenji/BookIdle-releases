@@ -88,8 +88,8 @@ public sealed class SniperSession
             var config = _config();
             config.Enabled = false;
             _pending.Clear();
-            _sink.Feed(FeedKind.Error, $"Erro inesperado: {e.Message}. Sniper desligado nesta conta.");
-            _sink.Disabled("Erro inesperado.");
+            _sink.Feed(FeedKind.Error, Loc.T("Erro inesperado: {0}. Sniper desligado nesta conta.", e.Message));
+            _sink.Disabled(Loc.T("Erro inesperado."));
             _sink.ConfigChanged();
         }
         finally { Detach(); }
@@ -102,7 +102,7 @@ public sealed class SniperSession
         if (!config.Enabled || !_channel.IsOpen) return;
         if (Balance is null)
         {
-            if (!_announcedNoBalance) _sink.Feed(FeedKind.Info, "Esperando o saldo da conta chegar do jogo…");
+            if (!_announcedNoBalance) _sink.Feed(FeedKind.Info, Loc.T("Esperando o saldo da conta chegar do jogo…"));
             _announcedNoBalance = true;
             return;
         }
@@ -132,7 +132,7 @@ public sealed class SniperSession
         if (items is null)
         {
             items = await RequestAsync<ItemsMessage>(MarketProtocol.Items(), m => true, ct);
-            if (items is null) return Fail("O jogo não respondeu à consulta de itens do mercado.");
+            if (items is null) return Fail(Loc.T("O jogo não respondeu à consulta de itens do mercado."));
             remember(items);
         }
 
@@ -147,7 +147,7 @@ public sealed class SniperSession
             var id = rule.ItemId!.Value;
             var offers = await RequestAsync<ItemOffersMessage>(MarketProtocol.ItemOffers(id, currency),
                 m => m.ItemId == id && m.Currency == currency, ct);
-            if (offers is null) return Fail("O jogo não respondeu à consulta das ofertas do item.");
+            if (offers is null) return Fail(Loc.T("O jogo não respondeu à consulta das ofertas do item."));
             if (!await ActAsync(config, rule, offers.Offers, ct)) return false;
         }
         return true;
@@ -168,7 +168,7 @@ public sealed class SniperSession
             // Os radares pedem o mercado todo de uma vez (o jogo já filtra e ordena); só a regra de uma espécie pede a dela.
             int? species = rule.Kind == RuleKind.Pokemon ? rule.SpeciesId : null;
             var listing = await RequestAsync<ListingMessage>(MarketProtocol.Listing(filter, species), m => true, ct);
-            if (listing is null) return Fail("O jogo não respondeu à consulta das ofertas de Pokémon.");
+            if (listing is null) return Fail(Loc.T("O jogo não respondeu à consulta das ofertas de Pokémon."));
 
             // respostas de outras consultas (a tela do usuário, por exemplo) não valem para a espécie pedida
             var offers = species is { } id ? listing.Offers.Where(o => o.SpeciesId == id).ToList() : listing.Offers;
@@ -189,7 +189,7 @@ public sealed class SniperSession
             {
                 if (_pending.TryAdd(decision.Offer.Id, decision))
                 {
-                    _sink.Feed(FeedKind.Offer, $"{Describe(decision.Offer)} em retenção, compra às {at.ToLocalTime():HH:mm:ss}.");
+                    _sink.Feed(FeedKind.Offer, Loc.T("{0} em retenção, compra às {1:HH:mm:ss}.", Describe(decision.Offer), at.ToLocalTime()));
                     _ = FireWhenReadyAsync(decision, at, ct);
                 }
                 continue;
@@ -229,7 +229,7 @@ public sealed class SniperSession
         catch (OperationCanceledException) { }
         catch (Exception e)
         {
-            _sink.Feed(FeedKind.Error, $"Erro na compra agendada: {e.Message}");
+            _sink.Feed(FeedKind.Error, Loc.T("Erro na compra agendada: {0}", e.Message));
         }
     }
 
@@ -238,7 +238,7 @@ public sealed class SniperSession
     {
         var offer = decision.Offer;
         var rule = decision.Rule;
-        _sink.Feed(FeedKind.Offer, $"{Describe(offer)} — comprando (regra {RuleName(rule)}).");
+        _sink.Feed(FeedKind.Offer, Loc.T("{0} — comprando (regra {1}).", Describe(offer), RuleName(rule)));
         _ledger.Started(offer.Id, _clock());
 
         // Cancelar no meio de uma compra perderia a resposta: o pedido já saiu, então espera o fim (o tempo é limitado).
@@ -250,15 +250,15 @@ public sealed class SniperSession
             // pode ter dado certo e a resposta só estar atrasada: não repete por um bom tempo e ainda conta se ela chegar
             _ledger.Unknown(offer.Id, _clock());
             _unconfirmed[offer.Id] = (rule, offer);
-            _sink.Feed(FeedKind.Lost, $"{Describe(offer)}: o jogo não confirmou a compra.");
-            return Fail("O jogo não confirmou a compra.");
+            _sink.Feed(FeedKind.Lost, Loc.T("{0}: o jogo não confirmou a compra.", Describe(offer)));
+            return Fail(Loc.T("O jogo não confirmou a compra."));
         }
 
         _failures = 0;
         if (!result.Ok)
         {
             _ledger.Finished(offer.Id, bought: false, _clock());
-            _sink.Feed(FeedKind.Lost, $"{Describe(offer)}: não levou (outro jogador, ou a oferta mudou).");
+            _sink.Feed(FeedKind.Lost, Loc.T("{0}: não levou (outro jogador, ou a oferta mudou).", Describe(offer)));
             return true;
         }
 
@@ -280,7 +280,7 @@ public sealed class SniperSession
         _ledger.Finished(offer.Id, bought: true, _clock());
         rule.Bought++;
         _tracker.Deduct(offer.Currency, offer.Price);
-        _sink.Feed(FeedKind.Bought, $"Comprou {Describe(offer)}.");
+        _sink.Feed(FeedKind.Bought, Loc.T("Comprou {0}.", Describe(offer)));
         _sink.Bought(rule, offer, offer.Price);
         _sink.ConfigChanged();
     }
@@ -294,7 +294,7 @@ public sealed class SniperSession
         config.Enabled = false;
         _failures = 0;
         ClearPending();
-        _sink.Feed(FeedKind.Error, $"{reason} Sniper desligado nesta conta depois de {MaxFailures} falhas seguidas.");
+        _sink.Feed(FeedKind.Error, Loc.T("{0} Sniper desligado nesta conta depois de {1} falhas seguidas.", reason, MaxFailures));
         _sink.Disabled(reason);
         _sink.ConfigChanged();
         return false;
@@ -336,7 +336,7 @@ public sealed class SniperSession
             else
             {
                 _ledger.Finished(pending.Offer.Id, bought: false, _clock());
-                _sink.Feed(FeedKind.Lost, $"{Describe(pending.Offer)}: não levou (resposta tardia do jogo).");
+                _sink.Feed(FeedKind.Lost, Loc.T("{0}: não levou (resposta tardia do jogo).", Describe(pending.Offer)));
             }
             return;
         }
@@ -347,7 +347,8 @@ public sealed class SniperSession
     }
 
     private static string Describe(MarketOffer o) =>
-        $"{(string.IsNullOrEmpty(o.Name) ? $"oferta {o.Id}" : o.Name)} por {o.Price.ToString("N0", CultureInfo.GetCultureInfo("pt-BR"))} {(o.Currency == Currency.Gold ? "coins" : "gemas")}";
+        Loc.T("{0} por {1} {2}", string.IsNullOrEmpty(o.Name) ? Loc.T("oferta {0}", o.Id) : o.Name,
+            o.Price.ToString("N0", Loc.Culture), o.Currency == Currency.Gold ? Loc.T("coins") : Loc.T("gemas"));
 
     private static string RuleName(SniperRule r) => string.IsNullOrWhiteSpace(r.Label) ? r.Kind.ToString() : r.Label;
 }

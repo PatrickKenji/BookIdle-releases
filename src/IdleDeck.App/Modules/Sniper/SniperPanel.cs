@@ -13,7 +13,7 @@ namespace IdleDeck.App.Modules.Sniper;
 /// </summary>
 public sealed class SniperPanel : DockPanel
 {
-    private static readonly CultureInfo Br = CultureInfo.GetCultureInfo("pt-BR");
+    private static CultureInfo Br => Loc.Culture;
     private const int MaxSuggestions = 60;
 
     private readonly SniperModule _module;
@@ -39,7 +39,7 @@ public sealed class SniperPanel : DockPanel
     private readonly TextBox _goldCeiling = Campo("0");
     private readonly TextBox _orbCeiling = Campo("0");
     private readonly TextBox _quantity = Campo("1");
-    private readonly CheckBox _infinite = new() { Content = "∞ Sem limite", VerticalAlignment = VerticalAlignment.Center };
+    private readonly CheckBox _infinite = new() { Content = Loc.T("∞ Sem limite"), VerticalAlignment = VerticalAlignment.Center };
     private readonly TextBlock _formError = new() { TextWrapping = TextWrapping.Wrap };
 
     // radar
@@ -73,7 +73,7 @@ public sealed class SniperPanel : DockPanel
         _body.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(350) });
         _body.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star), MinWidth = 260 });
         _body.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(320) });
-        _rulesTitle = Titulo("REGRAS DE COMPRA ATIVAS");
+        _rulesTitle = Titulo(Loc.T("REGRAS DE COMPRA ATIVAS"));
         _rules.Children.Add(_rulesTitle);
         _rules.Children.Add(_ruleList);
         _rules.Children.Add(BuildReserve());
@@ -106,11 +106,11 @@ public sealed class SniperPanel : DockPanel
     {
         var dock = new DockPanel();
         var top = new DockPanel { Margin = new Thickness(0, 0, 0, 6) };
-        var clear = new Button { Content = "LIMPAR", Padding = new Thickness(8, 2, 8, 2) };
+        var clear = new Button { Content = Loc.T("LIMPAR"), Padding = new Thickness(8, 2, 8, 2) };
         clear.Click += (_, _) => { if (_selected is { } id) _module.ClearFeed(id); };
         SetDock(clear, Dock.Right);
         top.Children.Add(clear);
-        top.Children.Add(Titulo("FEED DE EVENTOS"));
+        top.Children.Add(Titulo(Loc.T("FEED DE EVENTOS")));
         SetDock(top, Dock.Top);
         dock.Children.Add(top);
         _feedScroll.Content = _feed;
@@ -150,10 +150,10 @@ public sealed class SniperPanel : DockPanel
 
     private void BuildForm()
     {
-        _form.Children.Add(Titulo("NOVA REGRA DE COMPRA"));
+        _form.Children.Add(Titulo(Loc.T("NOVA REGRA DE COMPRA")));
         _form.Children.Add(_chips);
-        _form.Children.Add(Texto("BUSCAR ITEM / POKÉMON", muted: true, margin: new Thickness(0, 6, 0, 0)));
-        _search.ToolTip = "Digite para filtrar; clique numa sugestão para escolher.";
+        _form.Children.Add(Texto(Loc.T("BUSCAR ITEM / POKÉMON"), muted: true, margin: new Thickness(0, 6, 0, 0)));
+        _search.ToolTip = Loc.T("Digite para filtrar; clique numa sugestão para escolher.");
         _form.Children.Add(_search);
         BuildPopup();
 
@@ -162,7 +162,7 @@ public sealed class SniperPanel : DockPanel
         _preview.BorderThickness = new Thickness(2);
         _preview.CornerRadius = new CornerRadius(6);
         var previewRow = new DockPanel();
-        var clear = new Button { Content = "Limpar", Padding = new Thickness(8, 2, 8, 2), VerticalAlignment = VerticalAlignment.Center };
+        var clear = new Button { Content = Loc.T("Limpar"), Padding = new Thickness(8, 2, 8, 2), VerticalAlignment = VerticalAlignment.Center };
         clear.Click += (_, _) => Pick(null);
         SetDock(clear, Dock.Right);
         previewRow.Children.Add(clear);
@@ -178,8 +178,8 @@ public sealed class SniperPanel : DockPanel
         var ceilings = new Grid();
         ceilings.ColumnDefinitions.Add(new ColumnDefinition());
         ceilings.ColumnDefinitions.Add(new ColumnDefinition());
-        var coins = Mini("Teto em coins (GP)", _goldCeiling);
-        var gems = Mini("Teto em gemas", _orbCeiling);
+        var coins = Mini(Loc.T("Teto em coins (GP)"), _goldCeiling);
+        var gems = Mini(Loc.T("Teto em gemas"), _orbCeiling);
         Grid.SetColumn(gems, 1);
         gems.Margin = new Thickness(0);
         ceilings.Children.Add(coins);
@@ -189,7 +189,7 @@ public sealed class SniperPanel : DockPanel
         var qtyHeader = new DockPanel { Margin = new Thickness(0, 0, 0, 2) };
         SetDock(_infinite, Dock.Right);
         qtyHeader.Children.Add(_infinite);
-        qtyHeader.Children.Add(Texto("QUANTIDADE MÁXIMA", muted: true, margin: new Thickness(0)));
+        qtyHeader.Children.Add(Texto(Loc.T("QUANTIDADE MÁXIMA"), muted: true, margin: new Thickness(0)));
         _form.Children.Add(qtyHeader);
         _infinite.Checked += (_, _) => _quantity.IsEnabled = false;
         _infinite.Unchecked += (_, _) => _quantity.IsEnabled = true;
@@ -197,7 +197,7 @@ public sealed class SniperPanel : DockPanel
 
         _formError.SetResourceReference(TextBlock.ForegroundProperty, "Err");
         _form.Children.Add(_formError);
-        var add = new Button { Content = "CADASTRAR REGRA DE COMPRA", Padding = new Thickness(8, 6, 8, 6), Margin = new Thickness(0, 2, 0, 0) };
+        var add = new Button { Content = Loc.T("CADASTRAR REGRA DE COMPRA"), Padding = new Thickness(8, 6, 8, 6), Margin = new Thickness(0, 2, 0, 0) };
         ApplyStyle(add, "ArcadePrimaryButton");
         add.Click += (_, _) => AddRule();
         _form.Children.Add(add);
@@ -206,11 +206,11 @@ public sealed class SniperPanel : DockPanel
         _radarBadge.SetResourceReference(TextBlock.ForegroundProperty, "Muted");
         SetDock(_radarBadge, Dock.Right);
         radarHeader.Children.Add(_radarBadge);
-        radarHeader.Children.Add(Titulo("RADAR GLOBAL DE POKÉMON", new Thickness(0)));
+        radarHeader.Children.Add(Titulo(Loc.T("RADAR GLOBAL DE POKÉMON"), new Thickness(0)));
         _form.Children.Add(radarHeader);
-        AddRadar(RuleKind.AnyShiny, "Auto-snipe qualquer shiny (só gemas)", gold: false, nota: false);
-        AddRadar(RuleKind.AnyP5, "Auto-snipe qualquer P5 (potência 5)", gold: true, nota: false);
-        AddRadar(RuleKind.MinNota, "Auto-snipe por nota mínima", gold: true, nota: true);
+        AddRadar(RuleKind.AnyShiny, Loc.T("Auto-snipe qualquer shiny (só gemas)"), gold: false, nota: false);
+        AddRadar(RuleKind.AnyP5, Loc.T("Auto-snipe qualquer P5 (potência 5)"), gold: true, nota: false);
+        AddRadar(RuleKind.MinNota, Loc.T("Auto-snipe por nota mínima"), gold: true, nota: true);
         _radarError.SetResourceReference(TextBlock.ForegroundProperty, "Err");
         _form.Children.Add(_radarError);
 
@@ -226,7 +226,7 @@ public sealed class SniperPanel : DockPanel
     private void RebuildChips()
     {
         _chips.Children.Clear();
-        AddChip("Todas", null);
+        AddChip(Loc.T("Todas"), null);
         foreach (var group in ItemCategories.Chips) AddChip(ItemCategories.Label(group), group);
     }
 
@@ -267,8 +267,8 @@ public sealed class SniperPanel : DockPanel
         if (found.Count == 0)
         {
             var empty = _group == ItemCategories.Pokemon && _module.Species.All.Count == 0
-                ? "A lista de Pokémon é aprendida do mercado do jogo: abra o jogo nesta conta e espere alguns segundos."
-                : _module.Catalog is null ? "Carregando a lista de itens do jogo…" : "Nada encontrado com esse nome.";
+                ? Loc.T("A lista de Pokémon é aprendida do mercado do jogo: abra o jogo nesta conta e espere alguns segundos.")
+                : _module.Catalog is null ? Loc.T("Carregando a lista de itens do jogo…") : Loc.T("Nada encontrado com esse nome.");
             _suggestions.Children.Add(Texto(empty, muted: true, margin: new Thickness(6)));
         }
 
@@ -294,7 +294,7 @@ public sealed class SniperPanel : DockPanel
         _popup.IsOpen = false;
         _preview.Visibility = entry is null ? Visibility.Collapsed : Visibility.Visible;
         _previewName.Text = entry?.Name ?? "";
-        _previewLabel.Text = entry is null ? "" : entry.Kind == SearchKind.Pokemon ? "Pokémon" : $"Item · {entry.Label}";
+        _previewLabel.Text = entry is null ? "" : entry.Kind == SearchKind.Pokemon ? "Pokémon" : Loc.T("Item · {0}", entry.Label);
         _search.Text = "";
         _formError.Text = "";
     }
@@ -309,9 +309,9 @@ public sealed class SniperPanel : DockPanel
 
         _form.Children.Add(box);
         var row = new StackPanel { Orientation = Orientation.Horizontal };
-        if (nota) row.Children.Add(Mini("Nota", ui.Nota, 70));
-        if (gold) row.Children.Add(Mini("Coins", ui.Gold, 100));
-        row.Children.Add(Mini("Gemas", ui.Orb, 100));
+        if (nota) row.Children.Add(Mini(Loc.T("Nota"), ui.Nota, 70));
+        if (gold) row.Children.Add(Mini(Loc.T("Coins"), ui.Gold, 100));
+        row.Children.Add(Mini(Loc.T("Gemas"), ui.Orb, 100));
         _form.Children.Add(row);
 
         box.Click += (_, _) => ApplyRadar(ui);
@@ -357,7 +357,7 @@ public sealed class SniperPanel : DockPanel
             tab.Click += (_, _) => { _selected = captured; Refresh(); };
             _tabs.Children.Add(tab);
         }
-        if (accounts.Count == 0) _tabs.Children.Add(Texto("Nenhuma conta do PokeIdle.", muted: true));
+        if (accounts.Count == 0) _tabs.Children.Add(Texto(Loc.T("Nenhuma conta do PokeIdle."), muted: true));
     }
 
     private void BuildHeader()
@@ -366,7 +366,7 @@ public sealed class SniperPanel : DockPanel
         if (_selected is not { } id) return;
         var cfg = _module.Config(id);
 
-        var on = new CheckBox { Content = "AUTO-SNIPE NESTA CONTA", IsChecked = cfg.Enabled, VerticalAlignment = VerticalAlignment.Center, FontWeight = FontWeights.Bold };
+        var on = new CheckBox { Content = Loc.T("AUTO-SNIPE NESTA CONTA"), IsChecked = cfg.Enabled, VerticalAlignment = VerticalAlignment.Center, FontWeight = FontWeights.Bold };
         on.Click += (_, _) =>
         {
             cfg.Enabled = on.IsChecked == true;
@@ -377,8 +377,8 @@ public sealed class SniperPanel : DockPanel
 
         var balance = _module.BalanceOf(id);
         var slots = cfg.Rules.Count(r => r.Kind is RuleKind.Item or RuleKind.Pokemon);
-        var text = (balance is null ? "Saldo: esperando o jogo" : $"Saldo: {balance.Gold.ToString("N0", Br)} coins · {balance.Orb.ToString("N0", Br)} gemas")
-            + $"   ·   {slots} / {SniperRules.MaxRules} regras";
+        var text = (balance is null ? Loc.T("Saldo: esperando o jogo") : Loc.T("Saldo: {0} coins · {1} gemas", balance.Gold.ToString("N0", Br), balance.Orb.ToString("N0", Br)))
+            + Loc.T("   ·   {0} / {1} regras", slots, SniperRules.MaxRules);
         var info = Texto(text, muted: true, margin: new Thickness(0));
         info.VerticalAlignment = VerticalAlignment.Center;
         _header.Children.Add(info);
@@ -387,11 +387,11 @@ public sealed class SniperPanel : DockPanel
     private StackPanel BuildReserve()
     {
         var section = new StackPanel();
-        section.Children.Add(Titulo("PROTEÇÃO DE SALDO", new Thickness(0, 14, 0, 6)));
-        section.Children.Add(Texto("Reserva que o sniper nunca gasta. Ele só compra se sobrar pelo menos isso depois da compra.", muted: true, margin: new Thickness(0, 0, 0, 6)));
+        section.Children.Add(Titulo(Loc.T("PROTEÇÃO DE SALDO"), new Thickness(0, 14, 0, 6)));
+        section.Children.Add(Texto(Loc.T("Reserva que o sniper nunca gasta. Ele só compra se sobrar pelo menos isso depois da compra."), muted: true, margin: new Thickness(0, 0, 0, 6)));
         var row = new StackPanel { Orientation = Orientation.Horizontal };
-        row.Children.Add(Mini("Reserva em coins", _reserveGold, 140));
-        row.Children.Add(Mini("Reserva em gemas", _reserveOrb, 140));
+        row.Children.Add(Mini(Loc.T("Reserva em coins"), _reserveGold, 140));
+        row.Children.Add(Mini(Loc.T("Reserva em gemas"), _reserveOrb, 140));
         _reserveGold.LostFocus += ReserveChanged;
         _reserveOrb.LostFocus += ReserveChanged;
         section.Children.Add(row);
@@ -404,9 +404,9 @@ public sealed class SniperPanel : DockPanel
         if (_selected is not { } id) return;
         var cfg = _module.Config(id);
         var itemRules = cfg.Rules.Count(r => r.Kind is RuleKind.Item or RuleKind.Pokemon);
-        _rulesTitle.Text = $"REGRAS DE COMPRA ATIVAS ({itemRules} de {SniperRules.MaxRules})";
+        _rulesTitle.Text = Loc.T("REGRAS DE COMPRA ATIVAS ({0} de {1})", itemRules, SniperRules.MaxRules);
         if (cfg.Rules.Count == 0)
-            _ruleList.Children.Add(Texto($"Nenhuma regra cadastrada. Cadastre até {SniperRules.MaxRules} regras ao lado ou ligue um radar.", muted: true));
+            _ruleList.Children.Add(Texto(Loc.T("Nenhuma regra cadastrada. Cadastre até {0} regras ao lado ou ligue um radar.", SniperRules.MaxRules), muted: true));
         foreach (var rule in cfg.Rules) _ruleList.Children.Add(RuleCard(id, cfg, rule));
 
         // não pisa no que o usuário está digitando
@@ -414,7 +414,7 @@ public sealed class SniperPanel : DockPanel
         if (!_reserveOrb.IsKeyboardFocusWithin) _reserveOrb.Text = cfg.ReserveOrb.ToString("N0", Br);
 
         var radarsOn = cfg.Rules.Count(r => r.Kind is RuleKind.AnyShiny or RuleKind.AnyP5 or RuleKind.MinNota && r.Enabled);
-        _radarBadge.Text = $"{radarsOn} / 3 ativos";
+        _radarBadge.Text = Loc.T("{0} / 3 ativos", radarsOn);
     }
 
     private void ReserveChanged(object? sender, RoutedEventArgs e)
@@ -440,9 +440,9 @@ public sealed class SniperPanel : DockPanel
         grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
         grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
 
-        var on = new CheckBox { IsChecked = rule.Enabled, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 8, 0), ToolTip = "Liga/desliga esta regra" };
+        var on = new CheckBox { IsChecked = rule.Enabled, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 8, 0), ToolTip = Loc.T("Liga/desliga esta regra") };
         on.Click += (_, _) => { rule.Enabled = on.IsChecked == true; _module.ConfigChanged(account); };
-        var remove = new Button { Content = "✕", Padding = new Thickness(8, 2, 8, 2), ToolTip = "Apagar regra" };
+        var remove = new Button { Content = "✕", Padding = new Thickness(8, 2, 8, 2), ToolTip = Loc.T("Apagar regra") };
         remove.Click += (_, _) => { cfg.Rules.Remove(rule); _module.ConfigChanged(account); };
 
         var info = new StackPanel();
@@ -466,19 +466,19 @@ public sealed class SniperPanel : DockPanel
 
     private string RuleTitle(SniperRule r) => r.Kind switch
     {
-        RuleKind.AnyShiny => "Qualquer shiny",
-        RuleKind.AnyP5 => "Qualquer P5",
-        RuleKind.MinNota => $"Nota ≥ {r.MinNota.ToString("0.##", Br)}",
-        RuleKind.Pokemon => $"{(string.IsNullOrWhiteSpace(r.Label) ? _module.Species.NameOf(r.SpeciesId ?? 0) ?? $"Pokémon {r.SpeciesId}" : r.Label)}  ·  Pokémon",
-        _ => string.IsNullOrWhiteSpace(r.Label) ? _module.Catalog?.ById(r.ItemId ?? 0)?.Name ?? $"Item {r.ItemId}" : r.Label,
+        RuleKind.AnyShiny => Loc.T("Qualquer shiny"),
+        RuleKind.AnyP5 => Loc.T("Qualquer P5"),
+        RuleKind.MinNota => Loc.T("Nota ≥ {0}", r.MinNota.ToString("0.##", Br)),
+        RuleKind.Pokemon => $"{(string.IsNullOrWhiteSpace(r.Label) ? _module.Species.NameOf(r.SpeciesId ?? 0) ?? Loc.T("Pokémon {0}", r.SpeciesId) : r.Label)}  ·  Pokémon",
+        _ => string.IsNullOrWhiteSpace(r.Label) ? _module.Catalog?.ById(r.ItemId ?? 0)?.Name ?? Loc.T("Item {0}", r.ItemId) : r.Label,
     };
 
     private static string RuleDetail(SniperRule r)
     {
         var parts = new List<string>();
-        if (r.MaxGold > 0) parts.Add($"até {r.MaxGold.ToString("N0", Br)} coins");
-        if (r.MaxOrb > 0) parts.Add($"até {r.MaxOrb.ToString("N0", Br)} gemas");
-        parts.Add(r.MaxQty > 0 ? $"comprou {r.Bought} de {r.MaxQty}" : $"comprou {r.Bought} (sem limite)");
+        if (r.MaxGold > 0) parts.Add(Loc.T("até {0} coins", r.MaxGold.ToString("N0", Br)));
+        if (r.MaxOrb > 0) parts.Add(Loc.T("até {0} gemas", r.MaxOrb.ToString("N0", Br)));
+        parts.Add(r.MaxQty > 0 ? Loc.T("comprou {0} de {1}", r.Bought, r.MaxQty) : Loc.T("comprou {0} (sem limite)", r.Bought));
         return string.Join(" · ", parts);
     }
 
@@ -491,7 +491,7 @@ public sealed class SniperPanel : DockPanel
             var color = item.Kind switch { FeedKind.Bought => "Green", FeedKind.Error => "Err", FeedKind.Lost => "Orange", FeedKind.Offer => "Yellow", _ => "Muted" };
             _feed.Children.Add(Texto($"{item.At:HH:mm:ss}  {item.Text}", color: color));
         }
-        if (_feed.Children.Count == 0) _feed.Children.Add(Texto("Aguardando anúncios do mercado…", muted: true));
+        if (_feed.Children.Count == 0) _feed.Children.Add(Texto(Loc.T("Aguardando anúncios do mercado…"), muted: true));
     }
 
     // ---------- Ações ----------
@@ -517,14 +517,14 @@ public sealed class SniperPanel : DockPanel
     {
         _formError.Text = "";
         if (_selected is not { } id) return;
-        if (_picked is not { } picked) { _formError.Text = "Escolha um item ou Pokémon na busca."; return; }
+        if (_picked is not { } picked) { _formError.Text = Loc.T("Escolha um item ou Pokémon na busca."); return; }
         if (NumberParse.Coins(_goldCeiling.Text) is not { } gold || NumberParse.Coins(_orbCeiling.Text) is not { } orb)
         {
-            _formError.Text = "Use só números nos tetos.";
+            _formError.Text = Loc.T("Use só números nos tetos.");
             return;
         }
         var qty = _infinite.IsChecked == true ? 0 : NumberParse.Coins(_quantity.Text);
-        if (qty is null) { _formError.Text = "Use só números na quantidade."; return; }
+        if (qty is null) { _formError.Text = Loc.T("Use só números na quantidade."); return; }
 
         var rule = new SniperRule
         {
@@ -562,7 +562,7 @@ public sealed class SniperPanel : DockPanel
         var nota = ParseDecimal(ui.Nota.Text);
         if (NumberParse.Coins(ui.Orb.Text) is not { } orb || gold is not { } coins || (ui.Kind == RuleKind.MinNota && nota is null))
         {
-            _radarError.Text = "Use só números nos tetos e na nota.";
+            _radarError.Text = Loc.T("Use só números nos tetos e na nota.");
             ui.Box.IsChecked = false;
             return;
         }
@@ -571,7 +571,7 @@ public sealed class SniperPanel : DockPanel
         {
             Id = existing?.Id ?? Guid.NewGuid().ToString("N")[..8],
             Kind = ui.Kind,
-            Label = ui.Kind switch { RuleKind.AnyShiny => "Qualquer shiny", RuleKind.AnyP5 => "Qualquer P5", _ => $"Nota ≥ {(nota ?? 0).ToString("0.##", Br)}" },
+            Label = ui.Kind switch { RuleKind.AnyShiny => Loc.T("Qualquer shiny"), RuleKind.AnyP5 => Loc.T("Qualquer P5"), _ => Loc.T("Nota ≥ {0}", (nota ?? 0).ToString("0.##", Br)) },
             MaxGold = ui.Kind == RuleKind.AnyShiny ? 0 : coins,
             MaxOrb = orb,
             MinNota = ui.Kind == RuleKind.MinNota ? nota ?? 0 : 0,

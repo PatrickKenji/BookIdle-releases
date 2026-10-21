@@ -72,7 +72,7 @@ public partial class MainWindow : Window, IModuleHostServices
         _store = store;
         _modules = new ModuleHost(ModuleHost.All(this));
         InitializeComponent();
-        if (App.IsTestCopy) Title = "BookIdle (TESTE)";
+        if (App.IsTestCopy) Title = "BookIdle " + Loc.T("(TESTE)");
         _drag = new AccountDragController(AccountsGrid, VisibleViews, DropAccount);
         _twitch = new TwitchService(Dispatcher, CoreOfAccount);
         _twitch.Changed += () => Dispatcher.BeginInvoke(RefreshTwitchUi);
@@ -91,7 +91,7 @@ public partial class MainWindow : Window, IModuleHostServices
         _keepAlive = new KeepAliveService(Dispatcher);
         _keepAlive.BrowserProcessExited += async (_, _) => await RecreateBrowserAsync();
         _tray = new TrayIcon(ShowFromTray, ResetAll, ExitApp, () => _ = CheckForUpdateAsync(manual: true),
-            Updates.AppVersion.Current + (App.IsTestCopy ? " (TESTE)" : ""));
+            Updates.AppVersion.Current + (App.IsTestCopy ? " " + Loc.T("(TESTE)") : ""));
 
         _voteTimer.Tick += (_, _) => { foreach (var item in _items.Values) item.RefreshVote(); };
         _voteTimer.Start();
@@ -151,9 +151,9 @@ public partial class MainWindow : Window, IModuleHostServices
         if (!_updater.Configured || !_updater.Installed)
         {
             if (manual)
-                ArcadeDialog.Show(this, "Atualizações", _updater.Configured
-                    ? "Esta cópia do BookIdle não foi instalada pelo instalador, então não se atualiza sozinha."
-                    : "A atualização automática ainda não foi configurada nesta versão.");
+                ArcadeDialog.Show(this, Loc.T("Atualizações"), _updater.Configured
+                    ? Loc.T("Esta cópia do BookIdle não foi instalada pelo instalador, então não se atualiza sozinha.")
+                    : Loc.T("A atualização automática ainda não foi configurada nesta versão."));
             return;
         }
 
@@ -163,22 +163,22 @@ public partial class MainWindow : Window, IModuleHostServices
             var update = await _updater.CheckAsync();
             if (update is null)
             {
-                if (manual) ArcadeDialog.Show(this, "Atualizações", $"Você já está na versão mais recente ({Updates.AppVersion.Current}).");
+                if (manual) ArcadeDialog.Show(this, Loc.T("Atualizações"), Loc.T("Você já está na versão mais recente ({0}).", Updates.AppVersion.Current));
                 return;
             }
 
             var version = Updates.AppUpdater.VersionOf(update);
             if (!manual && _declinedVersion == version) return; // já disse "agora não" para esta; não insiste até reabrir
             ShowFromTray();
-            if (!ArcadeDialog.Show(this, "Atualização disponível",
-                    $"Há uma versão nova do BookIdle ({version}); esta é a {Updates.AppVersion.Current}.\n\nAtualizar agora? O app fecha e abre de novo sozinho, e as contas continuam logadas.",
+            if (!ArcadeDialog.Show(this, Loc.T("Atualização disponível"),
+                    Loc.T("Há uma versão nova do BookIdle ({0}); esta é a {1}.\n\nAtualizar agora? O app fecha e abre de novo sozinho, e as contas continuam logadas.", version, Updates.AppVersion.Current),
                     ArcadeDialogButtons.YesNo))
             {
                 _declinedVersion = version;
                 return;
             }
 
-            _tray.Notify("BookIdle", $"Baixando a versão {version}…");
+            _tray.Notify("BookIdle", Loc.T("Baixando a versão {0}…", version));
             await _updater.DownloadAsync(update);
             _pendingUpdate = update;
             ExitApp(); // fecha direito (salva e solta os navegadores); o Closed do App aplica a troca
@@ -186,7 +186,7 @@ public partial class MainWindow : Window, IModuleHostServices
         catch (Exception e)
         {
             App.Log(e);
-            if (manual) ArcadeDialog.Show(this, "Atualizações", $"Não consegui verificar agora:\n{e.Message}", kind: ArcadeDialogKind.Warning);
+            if (manual) ArcadeDialog.Show(this, Loc.T("Atualizações"), Loc.T("Não consegui verificar agora:\n{0}", e.Message), kind: ArcadeDialogKind.Warning);
         }
         finally { _checkingUpdate = false; }
     }
@@ -345,7 +345,7 @@ public partial class MainWindow : Window, IModuleHostServices
                 _host = null;
                 var delay = backoff.NextDelay();
                 _browserNotice = true;
-                ShowNotice($"O navegador não abriu ({e.Message}). Tentando de novo em {delay.TotalSeconds:0} s…");
+                ShowNotice(Loc.T("O navegador não abriu ({0}). Tentando de novo em {1:0} s…", e.Message, delay.TotalSeconds));
                 foreach (var view in _views)
                 {
                     view.Recreate();
@@ -578,29 +578,29 @@ public partial class MainWindow : Window, IModuleHostServices
             if (login is null)
             {
                 item.SetTwitch(channels > 0 ? TwitchIcon.Gray : TwitchIcon.Hidden,
-                    "Sem Twitch conectada. Botão direito na conta → Conectar Twitch…");
+                    Loc.T("Sem Twitch conectada. Botão direito na conta → Conectar Twitch…"));
                 continue;
             }
             if (channels == 0)
             {
-                item.SetTwitch(TwitchIcon.Gray, $"Twitch {login}: nenhum canal configurado (⋯ do perfil → Twitch)");
+                item.SetTwitch(TwitchIcon.Gray, Loc.T("Twitch {0}: nenhum canal configurado (⋯ do perfil → Twitch)", login));
                 continue;
             }
             switch (_twitch.StateOf(view.Config.ProfileName))
             {
                 case null:
-                    item.SetTwitch(TwitchIcon.Gray, $"Twitch {login}: desligada. Botão direito → Reconectar Twitch…");
+                    item.SetTwitch(TwitchIcon.Gray, Loc.T("Twitch {0}: desligada. Botão direito → Reconectar Twitch…", login));
                     break;
                 case { Status: TwitchStatus.AuthFailed }:
-                    item.SetTwitch(TwitchIcon.Gray, $"Twitch {login}: a conta saiu da Twitch (ou entrou outra). Botão direito → Reconectar Twitch…");
+                    item.SetTwitch(TwitchIcon.Gray, Loc.T("Twitch {0}: a conta saiu da Twitch (ou entrou outra). Botão direito → Reconectar Twitch…", login));
                     break;
                 case { Status: TwitchStatus.Connected } s when s.Joined == s.Wanted && s.Wanted > 0:
-                    item.SetTwitch(TwitchIcon.Green, $"Twitch {login}: ligada em {s.Joined} de {s.Wanted} canais");
+                    item.SetTwitch(TwitchIcon.Green, Loc.T("Twitch {0}: ligada em {1} de {2} canais", login, s.Joined, s.Wanted));
                     break;
                 case var s:
                     item.SetTwitch(TwitchIcon.Yellow, s!.Status == TwitchStatus.Connected
-                        ? $"Twitch {login}: entrando nos canais ({s.Joined} de {s.Wanted})…"
-                        : $"Twitch {login}: conectando…");
+                        ? Loc.T("Twitch {0}: entrando nos canais ({1} de {2})…", login, s.Joined, s.Wanted)
+                        : Loc.T("Twitch {0}: conectando…", login));
                     break;
             }
         }
@@ -630,14 +630,13 @@ public partial class MainWindow : Window, IModuleHostServices
         var view = item.View;
         if (_host is null || view.Core is not { } core)
         {
-            ArcadeDialog.Show(this, "Twitch", "O navegador ainda está abrindo. Tente de novo em instantes.");
+            ArcadeDialog.Show(this, "Twitch", Loc.T("O navegador ainda está abrindo. Tente de novo em instantes."));
             return;
         }
 
         var before = await ReadTwitchSessionAsync(core);
         if (before is not null && ArcadeDialog.Show(this, "Twitch",
-                $"Esta conta já está logada na Twitch como {before.Login}.\n\nUsar essa Twitch?\n\n" +
-                "(Se for a conta errada, escolha Não: na janela que abrir, saia da Twitch e entre na conta certa.)",
+                Loc.T("Esta conta já está logada na Twitch como {0}.\n\nUsar essa Twitch?\n\n(Se for a conta errada, escolha Não: na janela que abrir, saia da Twitch e entre na conta certa.)", before.Login),
                 ArcadeDialogButtons.YesNo))
         {
             CompleteTwitchConnection(view, before.Login);
@@ -647,7 +646,7 @@ public partial class MainWindow : Window, IModuleHostServices
         var window = await AccountWebWindow.OpenAsync(this, _host, view, "Twitch", "https://www.twitch.tv/login");
         if (window is null)
         {
-            ArcadeDialog.Show(this, "Twitch", "Não foi possível abrir a página da Twitch.", kind: ArcadeDialogKind.Error);
+            ArcadeDialog.Show(this, "Twitch", Loc.T("Não foi possível abrir a página da Twitch."), kind: ArcadeDialogKind.Error);
             return;
         }
 
@@ -689,7 +688,7 @@ public partial class MainWindow : Window, IModuleHostServices
         SyncTwitch();
 
         if (view.Profile.TwitchChannels.Count == 0)
-            ArcadeDialog.Show(this, "Twitch", $"Twitch {twitchLogin} conectada.\n\nFalta dizer em quais canais ela deve ficar: ⋯ do perfil → Twitch (bônus de live)…");
+            ArcadeDialog.Show(this, "Twitch", Loc.T("Twitch {0} conectada.\n\nFalta dizer em quais canais ela deve ficar: ⋯ do perfil → Twitch (bônus de live)…", twitchLogin));
     }
 
     private void DisconnectTwitch_Click(object sender, RoutedEventArgs e)
@@ -721,7 +720,7 @@ public partial class MainWindow : Window, IModuleHostServices
         }
         if (_host is null)
         {
-            ArcadeDialog.Show(this, "TopIdle", "O navegador ainda está abrindo. Tente de novo em instantes.");
+            ArcadeDialog.Show(this, "TopIdle", Loc.T("O navegador ainda está abrindo. Tente de novo em instantes."));
             return;
         }
         var voted = false;
@@ -734,7 +733,7 @@ public partial class MainWindow : Window, IModuleHostServices
             });
         if (window is null)
         {
-            ArcadeDialog.Show(this, "TopIdle", "Não foi possível abrir a página de voto.", kind: ArcadeDialogKind.Error);
+            ArcadeDialog.Show(this, "TopIdle", Loc.T("Não foi possível abrir a página de voto."), kind: ArcadeDialogKind.Error);
             return;
         }
         _voteWindows[view] = window;
@@ -911,7 +910,7 @@ public partial class MainWindow : Window, IModuleHostServices
     {
         var allMuted = _views.Count > 0 && _views.All(v => v.IsMuted);
         var glyph = allMuted ? "🔇" : "🔊";
-        var tip = allMuted ? "Tirar o mudo de todas as contas" : "Mutar todas as contas";
+        var tip = allMuted ? Loc.T("Tirar o mudo de todas as contas") : Loc.T("Mutar todas as contas");
         foreach (var button in new[] { RailMuteButton, SideMuteButton })
         {
             button.Content = glyph;
@@ -1033,11 +1032,11 @@ public partial class MainWindow : Window, IModuleHostServices
     private void ProfileMenu_Click(object sender, RoutedEventArgs e)
     {
         if (sender is not FrameworkElement { Tag: ProfileCard card } button) return;
-        var edit = new MenuItem { Header = "Editar perfil" };
+        var edit = new MenuItem { Header = Loc.T("Editar perfil") };
         edit.Click += (_, _) => EditProfile(card);
-        var twitch = new MenuItem { Header = "Twitch (bônus de live)…" };
+        var twitch = new MenuItem { Header = Loc.T("Twitch (bônus de live)…") };
         twitch.Click += (_, _) => EditTwitchChannels(card);
-        var delete = new MenuItem { Header = "Excluir perfil", Foreground = (System.Windows.Media.Brush)FindResource("Err") };
+        var delete = new MenuItem { Header = Loc.T("Excluir perfil"), Foreground = (System.Windows.Media.Brush)FindResource("Err") };
         delete.Click += async (_, _) => await DeleteProfileAsync(card);
         var menu = new ContextMenu { PlacementTarget = button, Placement = System.Windows.Controls.Primitives.PlacementMode.Bottom };
         menu.Items.Add(edit);
@@ -1077,12 +1076,12 @@ public partial class MainWindow : Window, IModuleHostServices
     {
         if (_settings.Profiles.Count <= 1)
         {
-            ArcadeDialog.Show(this, "Excluir perfil", "Este é o único perfil de jogo. Crie outro antes de excluir este.");
+            ArcadeDialog.Show(this, Loc.T("Excluir perfil"), Loc.T("Este é o único perfil de jogo. Crie outro antes de excluir este."));
             return;
         }
         var count = card.Profile.Accounts.Count;
-        if (!ArcadeDialog.Show(this, "Excluir perfil",
-                $"Excluir \"{card.Profile.Name}\" e suas {count} conta(s)? O login salvo dessas contas será apagado.",
+        if (!ArcadeDialog.Show(this, Loc.T("Excluir perfil"),
+                Loc.T("Excluir \"{0}\" e suas {1} conta(s)? O login salvo dessas contas será apagado.", card.Profile.Name, count),
                 ArcadeDialogButtons.YesNo, ArcadeDialogKind.Warning)) return;
 
         foreach (var view in ViewsOf(card.Profile)) await RemoveAccountViewAsync(view);
@@ -1118,8 +1117,8 @@ public partial class MainWindow : Window, IModuleHostServices
     {
         if (sender is not FrameworkElement { Tag: AccountItem item }) return;
         var view = item.View;
-        if (!ArcadeDialog.Show(this, "Remover conta",
-                $"Remover \"{view.Config.Name}\"? O login salvo desta conta será apagado.",
+        if (!ArcadeDialog.Show(this, Loc.T("Remover conta"),
+                Loc.T("Remover \"{0}\"? O login salvo desta conta será apagado.", view.Config.Name),
                 ArcadeDialogButtons.YesNo, ArcadeDialogKind.Warning)) return;
 
         var profile = view.Profile;
@@ -1202,7 +1201,7 @@ public partial class MainWindow : Window, IModuleHostServices
         catch (VaultUnlockException e)
         {
             App.Log(e);
-            ShowNotice("Não foi possível abrir o cofre de senhas: login automático desligado. Abra o 🔑 Cofre para apagar e recriar.");
+            ShowNotice(Loc.T("Não foi possível abrir o cofre de senhas: login automático desligado. Abra o 🔑 Cofre para apagar e recriar."));
         }
     }
 
@@ -1232,7 +1231,7 @@ public partial class MainWindow : Window, IModuleHostServices
         catch (Exception ex) when (ex is System.ComponentModel.Win32Exception or InvalidOperationException)
         {
             App.Log(ex);
-            ArcadeDialog.Show(this, "Apoiar", $"Não consegui abrir o navegador. A página é:\n{SupportUrl}", kind: ArcadeDialogKind.Warning);
+            ArcadeDialog.Show(this, Loc.T("Apoiar"), Loc.T("Não consegui abrir o navegador. A página é:\n{0}", SupportUrl), kind: ArcadeDialogKind.Warning);
         }
     }
 
@@ -1242,7 +1241,7 @@ public partial class MainWindow : Window, IModuleHostServices
         {
             if (_vault.RequiresMasterPassword)
             {
-                if (!UnlockWindow.Prompt(this, _vault, out var credentials, out var master, "Destrave o cofre para editar.")) return;
+                if (!UnlockWindow.Prompt(this, _vault, out var credentials, out var master, Loc.T("Destrave o cofre para editar."))) return;
                 SetCredentials(credentials, master);
             }
             else
@@ -1250,8 +1249,8 @@ public partial class MainWindow : Window, IModuleHostServices
                 try { SetCredentials(_vault.Unlock(null), null); }
                 catch (VaultUnlockException)
                 {
-                    if (!ArcadeDialog.Show(this, "Cofre",
-                            "Não foi possível abrir o cofre (corrompido ou criado em outro usuário/PC). Apagar o cofre e começar um novo?",
+                    if (!ArcadeDialog.Show(this, Loc.T("Cofre"),
+                            Loc.T("Não foi possível abrir o cofre (corrompido ou criado em outro usuário/PC). Apagar o cofre e começar um novo?"),
                             ArcadeDialogButtons.YesNo, ArcadeDialogKind.Warning)) return;
                     if (!TryDeleteVault()) return;
                     SetCredentials(null, null);
@@ -1292,7 +1291,7 @@ public partial class MainWindow : Window, IModuleHostServices
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
-            ArcadeDialog.Show(this, "Cofre", $"Não foi possível apagar o cofre: {ex.Message}", kind: ArcadeDialogKind.Error);
+            ArcadeDialog.Show(this, Loc.T("Cofre"), Loc.T("Não foi possível apagar o cofre: {0}", ex.Message), kind: ArcadeDialogKind.Error);
             return false;
         }
     }
@@ -1302,7 +1301,7 @@ public partial class MainWindow : Window, IModuleHostServices
         if (sender is not FrameworkElement { Tag: AccountItem item }) return;
         if (_credentials is null) { Vault_Click(sender, e); return; }
         if (!await _autoLogin.FillAsync(item.View, submit: false))
-            ArcadeDialog.Show(this, item.Name, "Nenhum formulário de login visível nesta conta, ou não há credencial salva para ela.");
+            ArcadeDialog.Show(this, item.Name, Loc.T("Nenhum formulário de login visível nesta conta, ou não há credencial salva para ela."));
     }
 
     private async void RetryLogin_Click(object sender, RoutedEventArgs e)
@@ -1406,8 +1405,8 @@ public partial class MainWindow : Window, IModuleHostServices
 
         SaveSettings();
 
-        if (window.RestartRequired && ArcadeDialog.Show(this, "Reiniciar",
-                "Algumas mudanças só valem depois de reiniciar o navegador (todas as contas recarregam). Reiniciar agora?",
+        if (window.RestartRequired && ArcadeDialog.Show(this, Loc.T("Reiniciar"),
+                Loc.T("Algumas mudanças só valem depois de reiniciar o app (todas as contas recarregam). Reiniciar agora?"),
                 ArcadeDialogButtons.YesNo))
         {
             RestartRequested = true;
@@ -1505,7 +1504,7 @@ public partial class MainWindow : Window, IModuleHostServices
         catch (Exception e)
         {
             App.Log(e);
-            ArcadeDialog.Show(this, $"Módulo {module.Title}", $"Não foi possível abrir: {e.Message}",
+            ArcadeDialog.Show(this, Loc.T("Módulo {0}", module.Title), Loc.T("Não foi possível abrir: {0}", e.Message),
                 ArcadeDialogButtons.Ok, ArcadeDialogKind.Error);
             return;
         }

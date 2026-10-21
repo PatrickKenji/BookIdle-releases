@@ -24,7 +24,7 @@ public sealed class ProfileCard(GameProfile profile) : INotifyPropertyChanged
         get
         {
             var memory = Accounts.Sum(a => a.MemoryBytes);
-            var text = $"{Accounts.Count}/{Profile.MaxAccounts} por IP";
+            var text = Loc.T("{0}/{1} por IP", Accounts.Count, Profile.MaxAccounts);
             return memory > 0 ? $"{text} · {Format.Bytes(memory)}" : text;
         }
     }

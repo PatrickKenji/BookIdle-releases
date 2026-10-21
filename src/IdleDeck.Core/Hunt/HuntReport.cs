@@ -59,10 +59,10 @@ public record HuntReport(
     /// <summary>O nome do tipo em português (o jogo manda em inglês: FIRE, WATER…).</summary>
     public static string TipoEmPortugues(string tipo) => tipo switch
     {
-        "NORMAL" => "Normal", "FIRE" => "Fogo", "WATER" => "Água", "GRASS" => "Planta", "ELECTRIC" => "Elétrico",
-        "ICE" => "Gelo", "FIGHTING" => "Lutador", "POISON" => "Veneno", "GROUND" => "Terra", "FLYING" => "Voador",
-        "PSYCHIC" => "Psíquico", "BUG" => "Inseto", "ROCK" => "Pedra", "GHOST" => "Fantasma", "DRAGON" => "Dragão",
-        "DARK" => "Sombrio", "STEEL" => "Aço", "FAIRY" => "Fada", _ => tipo,
+        "NORMAL" => Loc.T("Normal"), "FIRE" => Loc.T("Fogo"), "WATER" => Loc.T("Água"), "GRASS" => Loc.T("Planta"), "ELECTRIC" => Loc.T("Elétrico"),
+        "ICE" => Loc.T("Gelo"), "FIGHTING" => Loc.T("Lutador"), "POISON" => Loc.T("Veneno"), "GROUND" => Loc.T("Terra"), "FLYING" => Loc.T("Voador"),
+        "PSYCHIC" => Loc.T("Psíquico"), "BUG" => Loc.T("Inseto"), "ROCK" => Loc.T("Pedra"), "GHOST" => Loc.T("Fantasma"), "DRAGON" => Loc.T("Dragão"),
+        "DARK" => Loc.T("Sombrio"), "STEEL" => Loc.T("Aço"), "FAIRY" => Loc.T("Fada"), _ => tipo,
     };
 
     internal static HuntReport? From(JsonElement d)

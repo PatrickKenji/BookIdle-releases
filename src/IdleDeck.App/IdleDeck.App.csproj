@@ -24,6 +24,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Using Include="IdleDeck.Core.Localization" />
     <EmbeddedResource Include="Scripts\login-detect.js" LogicalName="Scripts.login-detect.js" />
     <EmbeddedResource Include="Scripts\topidle-vote.js" LogicalName="Scripts.topidle-vote.js" />
     <EmbeddedResource Include="Scripts\topidle-status.js" LogicalName="Scripts.topidle-status.js" />

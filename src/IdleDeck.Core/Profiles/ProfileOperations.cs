@@ -15,9 +15,9 @@ public static class ProfileOperations
 
         var used = profile.Accounts.Select(a => a.Name).ToHashSet(StringComparer.OrdinalIgnoreCase);
         var n = 1;
-        while (used.Contains($"Conta {n}")) n++;
+        while (used.Contains(Loc.T("Conta {0}", n))) n++;
 
-        var account = new AccountConfig($"Conta {n}", NewId(settings, "acc-"));
+        var account = new AccountConfig(Loc.T("Conta {0}", n), NewId(settings, "acc-"));
         profile.Accounts.Add(account);
         return account;
     }

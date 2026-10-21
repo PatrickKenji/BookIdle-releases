@@ -29,6 +29,7 @@ public partial class App : Application
     protected override void OnStartup(StartupEventArgs e)
     {
         base.OnStartup(e);
+        Loc.Use(Loc.Auto); // até as configurações carregarem (a mensagem de erro de abertura também é traduzida)
 
         if (!SingleInstance.TryAcquire())
         {
@@ -44,8 +45,8 @@ public partial class App : Application
         catch (Exception ex)
         {
             Log(ex);
-            ArcadeDialog.Show(null, "Não abriu",
-                $"O BookIdle não conseguiu abrir:\n{ex.Message}\n\nDetalhes em {Path.Combine(AppPaths.Root, "erros.log")}",
+            ArcadeDialog.Show(null, Loc.T("Não abriu"),
+                Loc.T("O BookIdle não conseguiu abrir:\n{0}\n\nDetalhes em {1}", ex.Message, Path.Combine(AppPaths.Root, "erros.log")),
                 kind: ArcadeDialogKind.Error);
             Shutdown();
         }
@@ -54,7 +55,9 @@ public partial class App : Application
     private void StartMainWindow(StartupEventArgs e)
     {
         var store = new SettingsStore(AppPaths.SettingsFile);
+        Loc.Use(Loc.Auto); // primeira execução: o perfil padrão já nasce no idioma do Windows
         var settings = store.Load();
+        Loc.Use(settings.Language);
         // O renome mudou o caminho do .exe: regrava a entrada de "iniciar com o Windows", se estiver ligada.
         if (settings.StartWithWindows && string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable(AppPaths.HomeVariable)))
         {

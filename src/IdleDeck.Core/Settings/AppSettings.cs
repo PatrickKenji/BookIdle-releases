@@ -68,6 +68,9 @@ public class AppSettings
 
     public ThemeKind Theme { get; set; } = ThemeKind.Arcade;
 
+    /// <summary>"auto" (segue o Windows), "pt", "en" ou "es". Vale ao reiniciar o app.</summary>
+    public string Language { get; set; } = Localization.Loc.Auto;
+
     /// <summary>Menu lateral recolhido (vira uma barra estreita com o logo e os quadrados das contas).</summary>
     public bool SidebarCollapsed { get; set; }
 
@@ -93,7 +96,7 @@ public class AppSettings
         Name = "PokeIdle",
         Url = DefaultUrl,
         MaxAccounts = 4,
-        Accounts = Enumerable.Range(1, 4).Select(i => new AccountConfig($"Conta {i}", $"conta{i}")).ToList(),
+        Accounts = Enumerable.Range(1, 4).Select(i => new AccountConfig(Localization.Loc.T("Conta {0}", i), $"conta{i}")).ToList(),
     };
 
     /// <summary>
@@ -122,6 +125,7 @@ public class AppSettings
         if (Profiles.All(p => p.Id != SelectedProfileId)) SelectedProfileId = Profiles[0].Id;
         if (MemoryLimitMb < 100) MemoryLimitMb = 600;
         if (!Enum.IsDefined(Theme)) Theme = ThemeKind.Arcade;
+        if (Language != Localization.Loc.Auto && Localization.Loc.Languages.All(l => l.Code != Language)) Language = Localization.Loc.Auto;
         BlockedDomains ??= [];
         return true;
     }

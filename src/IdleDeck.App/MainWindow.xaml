@@ -1,6 +1,7 @@
 ﻿<Window x:Class="IdleDeck.App.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:l="clr-namespace:IdleDeck.App.Localization"
         xmlns:local="clr-namespace:IdleDeck.App"
         xmlns:side="clr-namespace:IdleDeck.App.Sidebar"
         Title="BookIdle" Height="820" Width="1360" MinWidth="760" MinHeight="460"
@@ -16,22 +17,22 @@
                     DragOver="AccountRow_DragOver" DragLeave="AccountRow_DragLeave" Drop="AccountRow_Drop">
                 <Border.ContextMenu>
                     <ContextMenu>
-                        <MenuItem Header="✎  Renomear" Click="Rename_Click" Tag="{Binding}" />
-                        <MenuItem Header="⟳  Recarregar" Click="ResetAccount_Click" Tag="{Binding}" />
+                        <MenuItem Header="{l:T '✎  Renomear'}" Click="Rename_Click" Tag="{Binding}" />
+                        <MenuItem Header="{l:T '⟳  Recarregar'}" Click="ResetAccount_Click" Tag="{Binding}" />
                         <MenuItem Header="{Binding VoteLabel}" Click="Vote_Click" Tag="{Binding}" Visibility="{Binding VoteVisibility}"
-                                  ToolTip="Abre a página de voto do TopIdle com a sessão desta conta. Você vota; o app não clica por você." />
+                                  ToolTip="{l:T 'Abre a página de voto do TopIdle com a sessão desta conta. Você vota; o app não clica por você.'}" />
                         <MenuItem Header="{Binding TwitchConnectLabel}" Click="ConnectTwitch_Click" Tag="{Binding}"
-                                  ToolTip="Liga a Twitch desta conta: ela fica presente no chat das lives de bônus, em segundo plano." />
+                                  ToolTip="{l:T 'Liga a Twitch desta conta: ela fica presente no chat das lives de bônus, em segundo plano.'}" />
                         <MenuItem Header="{Binding TwitchDisconnectLabel}" Click="DisconnectTwitch_Click" Tag="{Binding}" Visibility="{Binding TwitchDisconnectVisibility}" />
                         <MenuItem Header="{Binding MuteLabel}" Click="ToggleMute_Click" Tag="{Binding}" />
                         <MenuItem Header="{Binding ProbeLabel}" Click="MarketProbe_Click" Tag="{Binding}"
-                                  ToolTip="Diagnóstico: registra só a forma do tráfego do jogo (sem chaves) para aprendermos como o mercado funciona." />
-                        <MenuItem Header="▣  Reencaixar tela" Click="ResyncView_Click" Tag="{Binding}" ToolTip="Corrige a janela do jogo que ficou deslocada ou com faixa vazia" />
+                                  ToolTip="{l:T 'Diagnóstico: registra só a forma do tráfego do jogo (sem chaves) para aprendermos como o mercado funciona.'}" />
+                        <MenuItem Header="{l:T '▣  Reencaixar tela'}" Click="ResyncView_Click" Tag="{Binding}" ToolTip="{l:T 'Corrige a janela do jogo que ficou deslocada ou com faixa vazia'}" />
                         <Separator />
-                        <MenuItem Header="Preencher login" Click="FillLogin_Click" Tag="{Binding}" />
-                        <MenuItem Header="Tentar login de novo" Click="RetryLogin_Click" Tag="{Binding}" />
+                        <MenuItem Header="{l:T 'Preencher login'}" Click="FillLogin_Click" Tag="{Binding}" />
+                        <MenuItem Header="{l:T 'Tentar login de novo'}" Click="RetryLogin_Click" Tag="{Binding}" />
                         <Separator />
-                        <MenuItem Header="Remover conta" Click="RemoveAccount_Click" Tag="{Binding}" Foreground="{DynamicResource Err}" />
+                        <MenuItem Header="{l:T 'Remover conta'}" Click="RemoveAccount_Click" Tag="{Binding}" Foreground="{DynamicResource Err}" />
                     </ContextMenu>
                 </Border.ContextMenu>
                 <DockPanel>
@@ -43,7 +44,7 @@
                         <Ellipse Width="12" Height="12" Fill="{Binding StatusBrush}" Stroke="{DynamicResource Card}" StrokeThickness="2"
                                  HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,-4,-4" />
                     </Grid>
-                    <Button DockPanel.Dock="Right" Style="{StaticResource IconButton}" Content="✎" ToolTip="Renomear"
+                    <Button DockPanel.Dock="Right" Style="{StaticResource IconButton}" Content="✎" ToolTip="{l:T 'Renomear'}"
                             Click="Rename_Click" Tag="{Binding}" VerticalAlignment="Top" />
                     <StackPanel Margin="10,0,0,0" VerticalAlignment="Center">
                         <DockPanel>
@@ -68,7 +69,7 @@
                             </Grid.ColumnDefinitions>
                             <Button Grid.Column="0" Content="{Binding VoteButtonLabel}" Click="Vote_Click" Tag="{Binding}"
                                     FontSize="10" Padding="4,3" Margin="0,0,3,0"
-                                    ToolTip="Abre a página de voto do TopIdle com a sessão desta conta. Você vota; o app não clica por você. Dá para votar de novo a cada 24 h.">
+                                    ToolTip="{l:T 'Abre a página de voto do TopIdle com a sessão desta conta. Você vota; o app não clica por você. Dá para votar de novo a cada 24 h.'}">
                                 <Button.Style>
                                     <Style TargetType="Button" BasedOn="{StaticResource ArcadeButton}">
                                         <Style.Triggers>
@@ -123,7 +124,7 @@
                              HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,-4,-4" />
                     <Border Width="14" Height="14" CornerRadius="7" Background="{DynamicResource Yellow}" BorderBrush="{DynamicResource Outline}" BorderThickness="2"
                             HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,-4,-4,0" Visibility="{Binding VoteDotVisibility}"
-                            ToolTip="Já pode votar no TopIdle" />
+                            ToolTip="{l:T 'Já pode votar no TopIdle'}" />
                 </Grid>
             </Button>
             <DataTemplate.Triggers>
@@ -140,9 +141,9 @@
                 <StackPanel>
                     <DockPanel Background="Transparent" Cursor="Hand" MouseLeftButtonUp="ProfileHeader_Click" Tag="{Binding}">
                         <Button DockPanel.Dock="Left" Style="{StaticResource IconButton}" Content="{Binding Chevron}" FontSize="15"
-                                Click="ToggleCollapse_Click" Tag="{Binding}" ToolTip="Recolher/expandir" VerticalAlignment="Top" />
+                                Click="ToggleCollapse_Click" Tag="{Binding}" ToolTip="{l:T 'Recolher/expandir'}" VerticalAlignment="Top" />
                         <Button DockPanel.Dock="Right" Style="{StaticResource IconButton}" Content="⋯" FontSize="15"
-                                Click="ProfileMenu_Click" Tag="{Binding}" ToolTip="Opções do perfil" VerticalAlignment="Top" />
+                                Click="ProfileMenu_Click" Tag="{Binding}" ToolTip="{l:T 'Opções do perfil'}" VerticalAlignment="Top" />
                         <StackPanel Margin="4,4,0,2">
                             <TextBlock Text="{Binding Title}" Style="{StaticResource PixelTitle}" FontSize="9" Foreground="{DynamicResource Text}"
                                        TextTrimming="CharacterEllipsis" />
@@ -151,7 +152,7 @@
                     </DockPanel>
                     <StackPanel Visibility="{Binding AccountsVisibility}">
                         <ItemsControl ItemsSource="{Binding Accounts}" ItemTemplate="{StaticResource AccountTemplate}" Margin="0,4,0,0" />
-                        <Button Content="+  Nova conta" Click="AddAccount_Click" Tag="{Binding}" IsEnabled="{Binding CanAddAccount}"
+                        <Button Content="{l:T '+  Nova conta'}" Click="AddAccount_Click" Tag="{Binding}" IsEnabled="{Binding CanAddAccount}"
                                 Margin="0,8,0,0" HorizontalAlignment="Stretch" Background="{DynamicResource Side}" Foreground="{DynamicResource Muted}" />
                     </StackPanel>
                     <!-- Módulos do jogo deste perfil (ex.: /hunt no PokeIdle) -->
@@ -184,13 +185,13 @@
                 BorderBrush="{DynamicResource Outline}" BorderThickness="0,0,3,0" Visibility="Collapsed">
             <DockPanel>
                 <StackPanel x:Name="RailFooter" DockPanel.Dock="Bottom" HorizontalAlignment="Center" Margin="0,6,0,10">
-                    <Button x:Name="RailMuteButton" Content="🔊" Click="MuteAll_Click" Width="44" Height="34" Padding="0" Margin="0,0,0,6" ToolTip="Mutar todas as contas" />
-                    <Button Content="◐" Click="Theme_Click" Width="44" Height="34" Padding="0" Margin="0,0,0,6" ToolTip="Alternar tema (Ctrl+T)" />
+                    <Button x:Name="RailMuteButton" Content="🔊" Click="MuteAll_Click" Width="44" Height="34" Padding="0" Margin="0,0,0,6" ToolTip="{l:T 'Mutar todas as contas'}" />
+                    <Button Content="◐" Click="Theme_Click" Width="44" Height="34" Padding="0" Margin="0,0,0,6" ToolTip="{l:T 'Alternar tema (Ctrl+T)'}" />
                     <Button Content="♥" Click="Support_Click" Width="44" Height="34" Padding="0" Margin="0,0,0,6" Foreground="{DynamicResource Err}"
-                            ToolTip="Apoiar o BookIdle (abre a página de apoio no navegador)" />
+                            ToolTip="{l:T 'Apoiar o BookIdle (abre a página de apoio no navegador)'}" />
                 </StackPanel>
                 <Button DockPanel.Dock="Top" Style="{StaticResource IconButton}" Click="ToggleSidebar_Click" Padding="0"
-                        HorizontalAlignment="Center" Margin="0,10,0,0" ToolTip="Abrir menu (Ctrl+B)">
+                        HorizontalAlignment="Center" Margin="0,10,0,0" ToolTip="{l:T 'Abrir menu (Ctrl+B)'}">
                     <Grid Width="44" Height="40">
                         <Image Source="/Resources/LogoBookIdleMini.png" Width="44" Height="32" VerticalAlignment="Top"
                                RenderOptions.BitmapScalingMode="HighQuality" />
@@ -219,29 +220,29 @@
                         BorderThickness="0,0,0,3" Padding="12,12,10,10">
                     <StackPanel>
                         <DockPanel>
-                            <Button DockPanel.Dock="Right" Content="⚙" Click="Settings_Click" ToolTip="Configurações" Margin="0" />
-                            <Button DockPanel.Dock="Right" Content="◐" Click="Theme_Click" ToolTip="Alternar tema (Ctrl+T)" Margin="0,0,6,0" />
-                            <Button x:Name="SideMuteButton" DockPanel.Dock="Right" Content="🔊" Click="MuteAll_Click" ToolTip="Mutar todas as contas" Margin="0,0,6,0" />
-                            <Button DockPanel.Dock="Right" Content="«" Click="ToggleSidebar_Click" ToolTip="Recolher menu (Ctrl+B)" Margin="0" />
+                            <Button DockPanel.Dock="Right" Content="⚙" Click="Settings_Click" ToolTip="{l:T 'Configurações'}" Margin="0" />
+                            <Button DockPanel.Dock="Right" Content="◐" Click="Theme_Click" ToolTip="{l:T 'Alternar tema (Ctrl+T)'}" Margin="0,0,6,0" />
+                            <Button x:Name="SideMuteButton" DockPanel.Dock="Right" Content="🔊" Click="MuteAll_Click" ToolTip="{l:T 'Mutar todas as contas'}" Margin="0,0,6,0" />
+                            <Button DockPanel.Dock="Right" Content="«" Click="ToggleSidebar_Click" ToolTip="{l:T 'Recolher menu (Ctrl+B)'}" Margin="0" />
                             <!-- Logo (imagem do BookIdle) no lugar do título em pixel font -->
                             <Image Source="/Resources/LogoBookIdle.png" Width="96" Stretch="Uniform" HorizontalAlignment="Left"
                                    VerticalAlignment="Center" Margin="2,0,0,0"
                                    RenderOptions.BitmapScalingMode="HighQuality" />
                         </DockPanel>
                         <UniformGrid Columns="3" Margin="-3,16,-3,0">
-                            <Button x:Name="LayoutTabsButton" Content="▭ Abas" Click="LayoutTabs_Click" Padding="6,5" ToolTip="Tela cheia com abas (Ctrl+1) · F11: só o jogo" />
-                            <Button x:Name="LayoutGridButton" Content="⊞ Grade" Click="LayoutGrid_Click" Padding="6,5" ToolTip="Todas as contas em grade (Ctrl+2) · F11: só o jogo" />
-                            <Button x:Name="LayoutMainButton" Content="◧ 1+N" Click="LayoutMain_Click" Padding="6,5" ToolTip="1 grande + as outras (Ctrl+3) · F11: só o jogo" />
+                            <Button x:Name="LayoutTabsButton" Content="{l:T '▭ Abas'}" Click="LayoutTabs_Click" Padding="6,5" ToolTip="{l:T 'Tela cheia com abas (Ctrl+1) · F11: só o jogo'}" />
+                            <Button x:Name="LayoutGridButton" Content="{l:T '⊞ Grade'}" Click="LayoutGrid_Click" Padding="6,5" ToolTip="{l:T 'Todas as contas em grade (Ctrl+2) · F11: só o jogo'}" />
+                            <Button x:Name="LayoutMainButton" Content="◧ 1+N" Click="LayoutMain_Click" Padding="6,5" ToolTip="{l:T '1 grande + as outras (Ctrl+3) · F11: só o jogo'}" />
                         </UniformGrid>
                         <DockPanel Margin="0,10,0,0">
                             <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
-                                <Button Content="−" Click="ZoomOut_Click" Padding="10,2" Margin="0" ToolTip="Diminuir (Ctrl+−)" />
+                                <Button Content="−" Click="ZoomOut_Click" Padding="10,2" Margin="0" ToolTip="{l:T 'Diminuir (Ctrl+−)'}" />
                                 <TextBlock x:Name="ZoomText" Text="100%" Width="48" TextAlignment="Center" FontWeight="Bold"
                                            VerticalAlignment="Center" Foreground="{DynamicResource Yellow}" />
-                                <Button Content="+" Click="ZoomIn_Click" Padding="10,2" Margin="0" ToolTip="Aumentar (Ctrl++)" />
+                                <Button Content="+" Click="ZoomIn_Click" Padding="10,2" Margin="0" ToolTip="{l:T 'Aumentar (Ctrl++)'}" />
                             </StackPanel>
-                            <TextBlock Text="Zoom do jogo" Style="{StaticResource MutedText}" FontSize="12" VerticalAlignment="Center"
-                                       ToolTip="Vale para todas as contas deste perfil. Ctrl+0 volta para 100%." />
+                            <TextBlock Text="{l:T 'Zoom do jogo'}" Style="{StaticResource MutedText}" FontSize="12" VerticalAlignment="Center"
+                                       ToolTip="{l:T 'Vale para todas as contas deste perfil. Ctrl+0 volta para 100%.'}" />
                         </DockPanel>
                         <TextBlock x:Name="NoticeText" Foreground="{DynamicResource Err}" FontSize="12" FontWeight="Bold"
                                    TextWrapping="Wrap" Margin="0,10,0,0" Visibility="Collapsed" />
@@ -252,28 +253,28 @@
                 <Border DockPanel.Dock="Bottom" BorderBrush="{DynamicResource Outline}" BorderThickness="0,2,0,0" Padding="12,10">
                     <StackPanel>
                         <DockPanel>
-                            <TextBlock Text="Compartilhado" Style="{StaticResource MutedText}" />
+                            <TextBlock Text="{l:T 'Compartilhado'}" Style="{StaticResource MutedText}" />
                             <TextBlock x:Name="SharedMemoryText" Text="—" HorizontalAlignment="Right" Style="{StaticResource MutedText}" />
                         </DockPanel>
                         <DockPanel Margin="0,3,0,0">
-                            <TextBlock Text="Total" FontWeight="Bold" />
+                            <TextBlock Text="{l:T 'Total'}" FontWeight="Bold" />
                             <TextBlock x:Name="TotalMemoryText" Text="—" HorizontalAlignment="Right" FontWeight="Bold" Foreground="{DynamicResource Yellow}" />
                         </DockPanel>
                         <UniformGrid Columns="2" Margin="-3,10,-3,0">
-                            <Button x:Name="ResetProfileButton" Content="⟳ Resetar perfil" Click="ResetProfile_Click" Style="{StaticResource ArcadePrimaryButton}"
-                                    ToolTip="Recarrega as contas do jogo selecionado para liberar memória (não desloga)" />
-                            <Button Content="🔑 Cofre" Click="Vault_Click" ToolTip="Cofre de senhas" />
+                            <Button x:Name="ResetProfileButton" Content="{l:T '⟳ Resetar perfil'}" Click="ResetProfile_Click" Style="{StaticResource ArcadePrimaryButton}"
+                                    ToolTip="{l:T 'Recarrega as contas do jogo selecionado para liberar memória (não desloga)'}" />
+                            <Button Content="{l:T '🔑 Cofre'}" Click="Vault_Click" ToolTip="{l:T 'Cofre de senhas'}" />
                         </UniformGrid>
-                        <Button Content="♥  Apoiar o BookIdle" Click="Support_Click" FontSize="10" Padding="8,3" Margin="0,8,0,0"
+                        <Button Content="{l:T '♥  Apoiar o BookIdle'}" Click="Support_Click" FontSize="10" Padding="8,3" Margin="0,8,0,0"
                                 HorizontalAlignment="Center" Foreground="{DynamicResource Err}"
-                                ToolTip="Gostou do BookIdle? Abre a página de apoio (LivePix) no navegador." />
+                                ToolTip="{l:T 'Gostou do BookIdle? Abre a página de apoio (LivePix) no navegador.'}" />
                     </StackPanel>
                 </Border>
 
                 <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="10,12,6,0">
                     <StackPanel>
                         <ItemsControl x:Name="ProfileList" ItemTemplate="{StaticResource ProfileTemplate}" />
-                        <Button Content="+  Novo perfil de jogo" Click="AddProfile_Click" HorizontalAlignment="Stretch"
+                        <Button Content="{l:T '+  Novo perfil de jogo'}" Click="AddProfile_Click" HorizontalAlignment="Stretch"
                                 Background="{DynamicResource Side}" Foreground="{DynamicResource Muted}" Margin="0,0,0,12" />
                     </StackPanel>
                 </ScrollViewer>
@@ -287,10 +288,10 @@
                 <Grid>
                     <Grid x:Name="AccountsGrid" />
                     <StackPanel x:Name="EmptyState" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Collapsed">
-                        <TextBlock Text="NENHUMA CONTA AQUI" Style="{StaticResource PixelTitle}" HorizontalAlignment="Center" />
-                        <TextBlock Text="Crie a primeira conta deste jogo." Style="{StaticResource MutedText}" FontSize="13"
+                        <TextBlock Text="{l:T 'NENHUMA CONTA AQUI'}" Style="{StaticResource PixelTitle}" HorizontalAlignment="Center" />
+                        <TextBlock Text="{l:T 'Crie a primeira conta deste jogo.'}" Style="{StaticResource MutedText}" FontSize="13"
                                    HorizontalAlignment="Center" Margin="0,10,0,14" />
-                        <Button Content="+  Nova conta" Click="AddAccountToSelected_Click" Style="{StaticResource ArcadePrimaryButton}" HorizontalAlignment="Center" />
+                        <Button Content="{l:T '+  Nova conta'}" Click="AddAccountToSelected_Click" Style="{StaticResource ArcadePrimaryButton}" HorizontalAlignment="Center" />
                     </StackPanel>
                 </Grid>
             </Border>

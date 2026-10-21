@@ -40,16 +40,16 @@ public static class ItemCategories
 
     public static string Label(string group) => group switch
     {
-        Stone => "Pedras",
+        Stone => Loc.T("Pedras"),
         Tm => "TMs",
-        RareLoot => "Loots Raros",
+        RareLoot => Loc.T("Loots Raros"),
         Beast => "Beast Balls",
-        Casa => "Casas",
+        Casa => Loc.T("Casas"),
         Box => "Boxes",
-        Bicicleta => "Bicicletas",
+        Bicicleta => Loc.T("Bicicletas"),
         Skin => "Skins",
         Pokemon => "Pokémon",
-        _ => "Outros",
+        _ => Loc.T("Outros"),
     };
 }
 

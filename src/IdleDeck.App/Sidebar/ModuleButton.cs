@@ -18,7 +18,7 @@ public sealed class ModuleButton(IModuleView module, GameProfile profile) : INot
     public GameProfile Profile { get; } = profile;
 
     public string Label => $"📊  {Module.Title}";
-    public string Tooltip => $"Abrir {Module.Title} numa janela, com as contas deste perfil";
+    public string Tooltip => Loc.T("Abrir {0} numa janela, com as contas deste perfil", Module.Title);
 
     public string? Summary => _summary;
     public Visibility SummaryVisibility => string.IsNullOrEmpty(_summary) ? Visibility.Collapsed : Visibility.Visible;

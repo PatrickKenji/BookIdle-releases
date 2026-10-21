@@ -32,7 +32,7 @@ public sealed class HuntModule : IModuleView
     public IReadOnlyList<string> AllowedPaths => ["/", "/app"];
     public string? InjectedScript { get; } = Carregar("Modules.Hunt.hunt-engine.js") + "\n" + Carregar("Modules.Hunt.hunt-page.js");
 
-    public string? Description => "Hunts de todas as contas deste perfil, lidas do jogo ao vivo. Clique numa conta para ver o ranking completo.";
+    public string? Description => Loc.T("Hunts de todas as contas deste perfil, lidas do jogo ao vivo. Clique numa conta para ver o ranking completo.");
 
     public event EventHandler? SummaryChanged;
 
@@ -44,9 +44,9 @@ public sealed class HuntModule : IModuleView
             var contas = _host.ContasDoPerfilSelecionado();
             if (contas.Count == 0) return null;
             var comHunt = contas.Count(_quadro.HasReport);
-            if (comHunt == contas.Count) return $"{contas.Count} de {contas.Count} contas com hunts";
-            return comHunt == 0 ? $"esperando o jogo em {contas.Count} conta{(contas.Count == 1 ? "" : "s")}…"
-                : $"{comHunt} de {contas.Count} contas com hunts";
+            if (comHunt == contas.Count) return Loc.T("{0} de {1} contas com hunts", contas.Count, contas.Count);
+            return comHunt == 0 ? Loc.T(contas.Count == 1 ? "esperando o jogo em {0} conta…" : "esperando o jogo em {0} contas…", contas.Count)
+                : Loc.T("{0} de {1} contas com hunts", comHunt, contas.Count);
         }
     }
 

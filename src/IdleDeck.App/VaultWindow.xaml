@@ -1,41 +1,42 @@
 <Window x:Class="IdleDeck.App.VaultWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Cofre de senhas" Width="680" SizeToContent="Height" MaxHeight="820" ResizeMode="NoResize"
+        xmlns:l="clr-namespace:IdleDeck.App.Localization"
+        Title="{l:T 'Cofre de senhas'}" Width="680" SizeToContent="Height" MaxHeight="820" ResizeMode="NoResize"
         WindowStartupLocation="CenterOwner" Style="{StaticResource ArcadeWindow}" ShowInTaskbar="False">
     <DockPanel Margin="20">
         <StackPanel DockPanel.Dock="Top">
-            <TextBlock Text="COFRE DE SENHAS" Style="{StaticResource PixelTitle}" />
+            <TextBlock Text="{l:T 'COFRE DE SENHAS'}" Style="{StaticResource PixelTitle}" />
             <TextBlock Style="{StaticResource MutedText}" TextWrapping="Wrap" Margin="0,8,0,0" FontSize="12"
-                       Text="Escolha como cada conta entra sozinha quando a sessão cair. Senha: usuário e senha do jogo. Google: só o e-mail (o app escolhe essa conta no Google, nunca digita senha do Google). Tudo fica criptografado só neste PC." />
+                       Text="{l:T 'Escolha como cada conta entra sozinha quando a sessão cair. Senha: usuário e senha do jogo. Google: só o e-mail (o app escolhe essa conta no Google, nunca digita senha do Google). Tudo fica criptografado só neste PC.'}" />
         </StackPanel>
 
         <StackPanel DockPanel.Dock="Bottom">
             <Border BorderBrush="{DynamicResource Outline}" BorderThickness="0,2,0,0" Margin="0,14,0,0" Padding="0,12,0,0">
                 <StackPanel>
-                    <CheckBox x:Name="UseMaster" Content="Proteger com senha mestra (pedida ao abrir o app)"
+                    <CheckBox x:Name="UseMaster" Content="{l:T 'Proteger com senha mestra (pedida ao abrir o app)'}"
                               Checked="UseMaster_Changed" Unchecked="UseMaster_Changed" />
                     <StackPanel x:Name="MasterPanel" Orientation="Horizontal" Margin="26,6,0,0">
                         <StackPanel Width="200" Margin="0,0,10,0">
-                            <TextBlock Text="Senha mestra" Style="{StaticResource MutedText}" Margin="0,0,0,3" />
+                            <TextBlock Text="{l:T 'Senha mestra'}" Style="{StaticResource MutedText}" Margin="0,0,0,3" />
                             <PasswordBox x:Name="Master" />
                         </StackPanel>
                         <StackPanel Width="200">
-                            <TextBlock Text="Confirmar" Style="{StaticResource MutedText}" Margin="0,0,0,3" />
+                            <TextBlock Text="{l:T 'Confirmar'}" Style="{StaticResource MutedText}" Margin="0,0,0,3" />
                             <PasswordBox x:Name="MasterConfirm" />
                         </StackPanel>
                     </StackPanel>
                     <TextBlock Style="{StaticResource MutedText}" TextWrapping="Wrap" Margin="26,6,0,0"
-                               Text="Sem senha mestra o cofre é protegido pelo seu usuário do Windows e o login automático funciona mesmo quando o app abre junto com o Windows." />
+                               Text="{l:T 'Sem senha mestra o cofre é protegido pelo seu usuário do Windows e o login automático funciona mesmo quando o app abre junto com o Windows.'}" />
                 </StackPanel>
             </Border>
             <TextBlock x:Name="ErrorText" Foreground="{DynamicResource Err}" Margin="0,10,0,0" Visibility="Collapsed" TextWrapping="Wrap" />
             <DockPanel Margin="0,16,0,0">
-                <Button DockPanel.Dock="Left" Content="Apagar cofre" Click="Delete_Click" Style="{StaticResource ArcadeDangerButton}"
-                        ToolTip="Remove todas as credenciais (use se esqueceu a senha mestra)" />
+                <Button DockPanel.Dock="Left" Content="{l:T 'Apagar cofre'}" Click="Delete_Click" Style="{StaticResource ArcadeDangerButton}"
+                        ToolTip="{l:T 'Remove todas as credenciais (use se esqueceu a senha mestra)'}" />
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                    <Button Content="Cancelar" IsCancel="True" />
-                    <Button Content="Salvar" Click="Save_Click" Style="{StaticResource ArcadePrimaryButton}" IsDefault="True" />
+                    <Button Content="{l:T 'Cancelar'}" IsCancel="True" />
+                    <Button Content="{l:T 'Salvar'}" Click="Save_Click" Style="{StaticResource ArcadePrimaryButton}" IsDefault="True" />
                 </StackPanel>
             </DockPanel>
         </StackPanel>
