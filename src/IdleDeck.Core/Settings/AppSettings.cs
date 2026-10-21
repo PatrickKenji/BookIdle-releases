@@ -1,6 +1,5 @@
 using IdleDeck.Core.Market;
 using System.Text.Json.Serialization;
-using IdleDeck.Core.Layout;
 using IdleDeck.Core.Twitch;
 
 namespace IdleDeck.Core.Settings;
@@ -9,7 +8,7 @@ namespace IdleDeck.Core.Settings;
 /// Layouts da área principal. Os nomes ficaram da versão 1, mas valem para qualquer número de contas:
 /// <see cref="Grid2x2"/> é a grade automática e <see cref="MainPlus3"/> é "1 grande + as outras".
 /// </summary>
-public enum LayoutMode { Tabs, Grid2x2, MainPlus3, Free }
+public enum LayoutMode { Tabs, Grid2x2, MainPlus3 }
 
 public enum LoginMethod { None, Password, Google }
 
@@ -35,12 +34,10 @@ public class GameProfile
     public string Url { get; set; } = "";
     public int MaxAccounts { get; set; } = 4;
     public List<AccountConfig> Accounts { get; set; } = [];
+    [JsonConverter(typeof(LayoutModeJsonConverter))]
     public LayoutMode Layout { get; set; } = LayoutMode.Tabs;
     public int FocusedAccount { get; set; }
     public bool Collapsed { get; set; }
-
-    /// <summary>Arranjo do modo Livre (linhas e colunas com tamanhos proporcionais). Nulo até a primeira vez no Livre.</summary>
-    public FreeLayout? Free { get; set; }
 
     /// <summary>Canais da Twitch que dão bônus neste jogo. Todas as contas do perfil entram em todos eles.</summary>
     public List<string> TwitchChannels { get; set; } = [];

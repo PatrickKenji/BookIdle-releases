@@ -59,7 +59,7 @@ public static class ProfileOperations
     }
 
     /// <summary>
-    /// "Expandir" uma conta da Grade, do 1+N ou do Livre: o perfil vai para as Abas com ela selecionada.
+    /// "Expandir" uma conta da Grade ou do 1+N: o perfil vai para as Abas com ela selecionada.
     /// Conta que não existe no perfil: devolve false e não muda nada.
     /// </summary>
     public static bool ExpandToTabs(GameProfile profile, string accountProfileName)

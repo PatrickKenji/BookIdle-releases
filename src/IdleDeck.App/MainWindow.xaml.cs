@@ -46,7 +46,6 @@ public partial class MainWindow : Window, IModuleHostServices
     /// <summary>Linha de resumo embaixo do botão do módulo na lateral.</summary>
     private readonly List<ModuleButton> _moduleButtons = [];
     private readonly AccountDragController _drag;
-    private readonly FreeLayoutController _free;
     private const string TopIdleVotedMessage = "topidle:voted";
     private static readonly string TopIdleVoteScript = AccountWebWindow.LoadScript("Scripts.topidle-vote.js");
     /// <summary>Lê da página do jogo quando foi o último voto e quando libera de novo (vale até para votos feitos fora do app).</summary>
@@ -73,8 +72,7 @@ public partial class MainWindow : Window, IModuleHostServices
         _modules = new ModuleHost(ModuleHost.All(this));
         InitializeComponent();
         if (App.IsTestCopy) Title = "BookIdle (TESTE)";
-        _drag = new AccountDragController(AccountsGrid, VisibleViews, () => Profile.Layout == LayoutMode.Free, DropAccount);
-        _free = new FreeLayoutController(AccountsGrid, () => Profile, SaveSettings);
+        _drag = new AccountDragController(AccountsGrid, VisibleViews, DropAccount);
         _twitch = new TwitchService(Dispatcher, CoreOfAccount);
         _twitch.Changed += () => Dispatcher.BeginInvoke(RefreshTwitchUi);
         foreach (var module in _modules.Modules) module.SummaryChanged += (_, _) => RefreshSummaries();
@@ -443,14 +441,11 @@ public partial class MainWindow : Window, IModuleHostServices
             _items[view].IsFocused = i == Profile.FocusedAccount;
         }
 
-        _free.Apply(Profile.Layout == LayoutMode.Free, profileViews, _views);
-
         foreach (var card in _cards) card.IsSelected = card.Profile == Profile;
         EmptyState.Visibility = profileViews.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
         LayoutTabsButton.Style = LayoutButtonStyle(LayoutMode.Tabs);
         LayoutGridButton.Style = LayoutButtonStyle(LayoutMode.Grid2x2);
         LayoutMainButton.Style = LayoutButtonStyle(LayoutMode.MainPlus3);
-        LayoutFreeButton.Style = LayoutButtonStyle(LayoutMode.Free);
         BuildTabStrip(profileViews);
         RailAccounts.ItemsSource = CardOf(Profile).Accounts; // quadrados do menu recolhido
         ContasMudaram?.Invoke(this, EventArgs.Empty);
@@ -525,16 +520,8 @@ public partial class MainWindow : Window, IModuleHostServices
     private IReadOnlyList<AccountView> VisibleViews() => ViewsOf(Profile).Where(v => v.Visibility == Visibility.Visible).ToList();
 
     /// <summary>Soltou uma conta sobre outra: troca de lugar (no 1+N, soltar sobre a grande a torna a principal).</summary>
-    private void DropAccount(AccountView dragged, AccountView target, DropZone zone)
+    private void DropAccount(AccountView dragged, AccountView target)
     {
-        if (Profile.Layout == LayoutMode.Free)
-        {
-            // modo Livre: o arranjo é a árvore de linhas/colunas, não a ordem das contas
-            if (Profile.Free is null || !FreeLayoutEngine.Drop(Profile.Free, dragged.Config.ProfileName, target.Config.ProfileName, zone)) return;
-            ApplyLayout();
-            SaveSettings();
-            return;
-        }
         var targetIndex = Profile.Accounts.FindIndex(a => a.ProfileName == target.Config.ProfileName);
         if (Profile.Layout == LayoutMode.MainPlus3 && targetIndex == Profile.FocusedAccount)
         {
@@ -549,7 +536,7 @@ public partial class MainWindow : Window, IModuleHostServices
         SaveSettings();
     }
 
-    /// <summary>Botão ⛶ de uma janela da Grade/1+N/Livre: vai para as Abas com ela selecionada.</summary>
+    /// <summary>Botão ⛶ de uma janela da Grade/1+N: vai para as Abas com ela selecionada.</summary>
     private void ExpandAccount(AccountView view)
     {
         if (!ProfileOperations.ExpandToTabs(view.Profile, view.Config.ProfileName)) return;
@@ -980,7 +967,6 @@ public partial class MainWindow : Window, IModuleHostServices
             case Key.D1 or Key.NumPad1 when ctrl: SetLayout(LayoutMode.Tabs); break;
             case Key.D2 or Key.NumPad2 when ctrl: SetLayout(LayoutMode.Grid2x2); break;
             case Key.D3 or Key.NumPad3 when ctrl: SetLayout(LayoutMode.MainPlus3); break;
-            case Key.D4 or Key.NumPad4 when ctrl: SetLayout(LayoutMode.Free); break;
             case Key.OemMinus or Key.Subtract when ctrl: SetProfileZoom(Profile, Profile.Zoom - ZoomStep); break;
             case Key.OemPlus or Key.Add when ctrl: SetProfileZoom(Profile, Profile.Zoom + ZoomStep); break;
             case Key.D0 or Key.NumPad0 when ctrl: SetProfileZoom(Profile, 1.0); break;
@@ -1317,7 +1303,6 @@ public partial class MainWindow : Window, IModuleHostServices
     private void LayoutTabs_Click(object sender, RoutedEventArgs e) => SetLayout(LayoutMode.Tabs);
     private void LayoutGrid_Click(object sender, RoutedEventArgs e) => SetLayout(LayoutMode.Grid2x2);
     private void LayoutMain_Click(object sender, RoutedEventArgs e) => SetLayout(LayoutMode.MainPlus3);
-    private void LayoutFree_Click(object sender, RoutedEventArgs e) => SetLayout(LayoutMode.Free);
 
     private void ResetAccount_Click(object sender, RoutedEventArgs e)
     {

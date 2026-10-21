@@ -228,12 +228,10 @@
                                    VerticalAlignment="Center" Margin="2,0,0,0"
                                    RenderOptions.BitmapScalingMode="HighQuality" />
                         </DockPanel>
-                        <UniformGrid Columns="4" Margin="-3,16,-3,0">
+                        <UniformGrid Columns="3" Margin="-3,16,-3,0">
                             <Button x:Name="LayoutTabsButton" Content="▭ Abas" Click="LayoutTabs_Click" Padding="6,5" ToolTip="Tela cheia com abas (Ctrl+1) · F11: só o jogo" />
                             <Button x:Name="LayoutGridButton" Content="⊞ Grade" Click="LayoutGrid_Click" Padding="6,5" ToolTip="Todas as contas em grade (Ctrl+2) · F11: só o jogo" />
                             <Button x:Name="LayoutMainButton" Content="◧ 1+N" Click="LayoutMain_Click" Padding="6,5" ToolTip="1 grande + as outras (Ctrl+3) · F11: só o jogo" />
-                            <Button x:Name="LayoutFreeButton" Content="◫ Livre" Click="LayoutFree_Click" Padding="6,5"
-                                    ToolTip="Arraste as janelas e puxe as bordas para o tamanho que quiser (Ctrl+4) · F11: só o jogo" />
                         </UniformGrid>
                         <DockPanel Margin="0,10,0,0">
                             <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">

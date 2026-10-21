@@ -27,17 +27,9 @@ public static class LayoutCalculator
         {
             LayoutMode.Grid2x2 => Grid(accountCount),
             LayoutMode.MainPlus3 => MainPlus3(accountCount, focused),
-            LayoutMode.Free => SingleCell(accountCount),
             _ => throw new ArgumentOutOfRangeException(nameof(mode)),
         };
     }
-
-    /// <summary>
-    /// Modo Livre: todas as contas na mesma célula; quem posiciona cada uma é o <see cref="FreeLayoutEngine"/>
-    /// (por margem e tamanho), sem reparentar o WebView2.
-    /// </summary>
-    private static LayoutResult SingleCell(int count) =>
-        new([1.0], [1.0], Enumerable.Range(0, count).Select(_ => new CellPlacement(0, 0, 1, 1, true)).ToList());
 
     /// <summary>Grade automática: ⌈√n⌉ colunas, preenchida por linhas.</summary>
     private static LayoutResult Grid(int count)

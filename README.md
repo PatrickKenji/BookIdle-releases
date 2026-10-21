@@ -65,8 +65,8 @@ entrar nos chats dos canais de bônus com uma conexão leve, **sem abrir um nave
 
 ### Contas lado a lado
 - **Várias contas** no mesmo programa, cada uma num navegador isolado, com o estado de cada uma (online, memória) à vista.
-- **Quatro modos de janela:** **Abas**, **Grade 2×2**, **1+N** (uma grande e as outras pequenas) e **Livre** (você arrasta, solta e
-  redimensiona cada janela como quiser, sem sobreposição). Atalhos: `Ctrl+1` a `Ctrl+4`.
+- **Três modos de janela:** **Abas**, **Grade** (todas as contas visíveis) e **1+N** (uma grande e as outras pequenas). Atalhos: `Ctrl+1` a
+  `Ctrl+3`.
 - **Arrastar para reordenar** as contas, na lista da lateral e nas janelas.
 - **Botão de expandir (⛶)** em cada janela: vira o modo Abas já na conta escolhida.
 - **Som:** mutar tudo, ou mutar cada conta (🔊/🔇 no cabeçalho de cada janela e no menu da conta).
