@@ -1,0 +1,19 @@
+<Window x:Class="IdleDeck.App.UnlockWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Destravar cofre" Width="380" SizeToContent="Height" ResizeMode="NoResize"
+        WindowStartupLocation="CenterOwner" Style="{StaticResource ArcadeWindow}" ShowInTaskbar="False">
+    <StackPanel Margin="18">
+        <TextBlock Text="SENHA MESTRA DO COFRE" Style="{StaticResource SectionTitle}" Margin="0,0,0,8" />
+        <TextBlock x:Name="Hint" Foreground="{DynamicResource Muted}" TextWrapping="Wrap" Margin="0,4,0,10"
+                   Text="Necessária para o login automático das contas." />
+        <PasswordBox x:Name="Password" KeyDown="Password_KeyDown" />
+        <TextBlock x:Name="ErrorText" Foreground="{DynamicResource Err}" Margin="0,6,0,0" Visibility="Collapsed"
+                   Text="Senha incorreta ou cofre corrompido." TextWrapping="Wrap" />
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,14,0,0">
+            <Button x:Name="SkipButton" Content="Pular" Click="Skip_Click"
+                    ToolTip="Abre o app sem login automático" />
+            <Button Content="Destravar" Click="Unlock_Click" Style="{StaticResource ArcadeSelectedButton}" IsDefault="True" />
+        </StackPanel>
+    </StackPanel>
+</Window>

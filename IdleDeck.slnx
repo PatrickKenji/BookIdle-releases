@@ -1,0 +1,9 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/IdleDeck.App/IdleDeck.App.csproj" />
+    <Project Path="src/IdleDeck.Core/IdleDeck.Core.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/IdleDeck.Core.Tests/IdleDeck.Core.Tests.csproj" />
+  </Folder>
+</Solution>
