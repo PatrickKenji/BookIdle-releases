@@ -47,6 +47,7 @@ public partial class MainWindow : Window, IModuleHostServices
     private readonly List<ModuleButton> _moduleButtons = [];
     private readonly AccountDragController _drag;
     private const string TopIdleVotedMessage = "topidle:voted";
+    private static readonly TimeSpan VoteResyncAfter = TimeSpan.FromSeconds(20);
     private static readonly string TopIdleVoteScript = AccountWebWindow.LoadScript("Scripts.topidle-vote.js");
     /// <summary>Lê da página do jogo quando foi o último voto e quando libera de novo (vale até para votos feitos fora do app).</summary>
     private static readonly string TopIdleStatusScript = AccountWebWindow.LoadScript("Scripts.topidle-status.js");
@@ -723,15 +724,28 @@ public partial class MainWindow : Window, IModuleHostServices
             ArcadeDialog.Show(this, "TopIdle", "O navegador ainda está abrindo. Tente de novo em instantes.");
             return;
         }
+        var voted = false;
         var window = await AccountWebWindow.OpenAsync(this, _host, view, "TopIdle", VoteCooldown.VoteUrl, TopIdleVoteScript,
-            message => { if (message == TopIdleVotedMessage) RecordVote(view); });
+            message =>
+            {
+                if (message != TopIdleVotedMessage) return;
+                voted = true;
+                RecordVote(view);
+            });
         if (window is null)
         {
             ArcadeDialog.Show(this, "TopIdle", "Não foi possível abrir a página de voto.", kind: ArcadeDialogKind.Error);
             return;
         }
         _voteWindows[view] = window;
-        window.Closed += (_, _) => _voteWindows.Remove(view);
+        var openedAt = DateTime.UtcNow;
+        window.Closed += (_, _) =>
+        {
+            _voteWindows.Remove(view);
+            // a página não avisou o voto, mas a janela ficou aberta o bastante para ter votado: o jogo, ao recarregar,
+            // diz o status verdadeiro (topidle-status.js) e o botão do menu se acerta sozinho
+            if (!voted && DateTime.UtcNow - openedAt > VoteResyncAfter && _items.ContainsKey(view)) view.Reload();
+        };
     }
 
     /// <summary>A página confirmou o voto: guarda a hora para a contagem de 24 h.</summary>
