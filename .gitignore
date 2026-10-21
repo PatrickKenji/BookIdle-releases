@@ -4,5 +4,3 @@ obj/
 *.user
 TestResults/
 .build/
-tools/release/out/
-tools/dev/out/

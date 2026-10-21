@@ -140,20 +140,14 @@ pokeidle.io.
 Precisa do [SDK do .NET 10](https://dotnet.microsoft.com/download) e do Windows (o app é WPF + WebView2).
 
 ```powershell
-dotnet build                      # compila tudo
-dotnet test tests/IdleDeck.Core.Tests            # testes da lógica (C#)
-node --test tests/market-bridge/market-bridge.test.mjs tests/topidle-status/topidle-status.test.mjs `
-            tests/topidle-vote/topidle-vote.test.mjs tests/hunt-engine/hunt-engine.test.mjs tests/hunt-engine/hunt-sazonal.test.mjs
-.\tools\dev\run-dev.ps1           # abre uma cópia de TESTE do seu código, com dados separados (não mexe nas suas contas)
+dotnet build          # compila tudo
 ```
 
 | Pasta | O que tem |
 |---|---|
 | `src/IdleDeck.Core` | lógica pura, sem tela: configurações, layouts, cofre, Twitch, voto, mercado, sniper |
 | `src/IdleDeck.App` | o programa (WPF + WebView2), módulos `/hunt` e Sniper e os scripts injetados nas páginas |
-| `tests/` | testes em C# (xUnit) e em Node (scripts das páginas e motor do `/hunt`) |
-| `tools/` | `dev/` (cópia de teste, provar atualização), `release/` (gerar instalador), `brand/` (logo e ícone) |
-| `docs/` | [como lançar versões](docs/distribuicao.md), [protocolo do mercado](docs/pokeidle-mercado.md), [notas do `/hunt`](docs/pokeidle-notes.md) |
+| `docs/` | [protocolo do mercado](docs/pokeidle-mercado.md), [notas do `/hunt`](docs/pokeidle-notes.md) |
 
 Sugestões e relatos de problemas são bem-vindos: abra uma [issue](https://github.com/PatrickKenji/BookIdle-releases/issues) ou
 participe das [Discussions](https://github.com/PatrickKenji/BookIdle-releases/discussions). Para manter as atualizações seguras, **só quem
