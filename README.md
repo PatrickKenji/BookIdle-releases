@@ -6,6 +6,16 @@ live da Twitch, ranking de hunts e sniper do mercado. Programa de Windows, de c�
 > **Projeto não oficial.** O BookIdle não tem ligação com o pokeidle.io, o TopIdle, a Twitch, a Nintendo ou a The Pokémon Company; todas as
 > marcas são dos respectivos donos. Use por sua conta e risco e respeite as regras do jogo (veja [Uso responsável](#uso-responsável)).
 
+<p align="center">
+  <img src="docs/img/janela-principal.png" alt="Janela principal do BookIdle: contas na lateral, com os botões de voto e de Twitch, e o jogo ao lado" width="760">
+</p>
+
+<p align="center">
+  <img src="docs/img/sniper.png" alt="Painel do Sniper do mercado: nova regra, radar de Pokémon, regras ativas, proteção de saldo e feed" width="760">
+</p>
+
+<sub>Capturas com dados de exemplo.</sub>
+
 ---
 
 ## Baixar e instalar
