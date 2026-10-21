@@ -155,8 +155,10 @@ node --test tests/market-bridge/market-bridge.test.mjs tests/topidle-status/topi
 | `tools/` | `dev/` (cópia de teste, provar atualização), `release/` (gerar instalador), `brand/` (logo e ícone) |
 | `docs/` | [como lançar versões](docs/distribuicao.md), [protocolo do mercado](docs/pokeidle-mercado.md), [notas do `/hunt`](docs/pokeidle-notes.md) |
 
-Contribuições são bem-vindas: correções, testes e ideias. Antes de uma mudança grande, abra uma issue para conversarmos. Mexeu na lógica?
-Escreva o teste primeiro — o projeto é bem coberto, e isso é o que nos deixa mexer sem medo.
+Sugestões e relatos de problemas são bem-vindos: abra uma [issue](https://github.com/PatrickKenji/BookIdle-releases/issues) ou
+participe das [Discussions](https://github.com/PatrickKenji/BookIdle-releases/discussions). Para manter as atualizações seguras, **só quem
+mantém o projeto altera o código** (pull requests de fora ficam desligados); você pode ler, copiar e modificar à vontade para uso próprio,
+dentro da [licença](LICENSE).
 
 ---
 
