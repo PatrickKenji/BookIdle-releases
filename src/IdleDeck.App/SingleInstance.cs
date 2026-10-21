@@ -6,12 +6,10 @@ namespace IdleDeck.App;
 /// </summary>
 public static class SingleInstance
 {
-    // Os nomes não mudaram com o renome para BookIdle: assim uma instância antiga (IdleDeckPessoal.exe)
-    // e a nova nunca rodam ao mesmo tempo sobre os mesmos perfis de navegador.
     // Em instância de teste (BOOKIDLE_HOME definido) o sufixo deixa abrir ao lado da instância real.
     private static readonly string Suffix = string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable(IdleDeck.Core.AppPaths.HomeVariable)) ? "" : ".test";
-    private static readonly string MutexName = @"Local\IdleDeckPessoal" + Suffix;
-    private static readonly string ShowEventName = @"Local\IdleDeckPessoal.Show" + Suffix;
+    private static readonly string MutexName = @"Local\BookIdle" + Suffix;
+    private static readonly string ShowEventName = @"Local\BookIdle.Show" + Suffix;
 
     private static Mutex? _mutex;
     private static EventWaitHandle? _showEvent;

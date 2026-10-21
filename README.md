@@ -42,7 +42,7 @@ Precisa de **Windows 10 ou 11**.
 **Os autores do BookIdle não têm acesso às suas contas, senhas nem dados.** Não existe servidor nosso: o app roda inteiro no seu
 computador e **nada é enviado para nós**.
 
-- **Tudo fica no seu PC**, na pasta `%LOCALAPPDATA%\IdleDeckPessoal`: configurações, regras, logins das contas e senhas.
+- **Tudo fica no seu PC**, na pasta `%LOCALAPPDATA%\BookIdleData`: configurações, regras, logins das contas e senhas.
 - **Cada conta tem o próprio navegador isolado** (WebView2): as sessões e os cookies de uma conta não se misturam com os das outras nem com
   o seu navegador.
 - **Cofre de senhas opcional**, criptografado no seu PC: com o seu usuário do Windows (DPAPI) ou com uma **senha mestra** (AES-256-GCM,

@@ -16,6 +16,7 @@ public class VaultStore(string filePath)
     private const byte ModePassword = 2;
     private const int SaltSize = 16, NonceSize = 12, TagSize = 16, KeySize = 32;
     private const int Iterations = 600_000;
+    // NÃO MUDAR: é parte da chave do cofre. Trocar este texto impediria abrir os cofres já criados (o nome vem da versão antiga do app).
     private static readonly byte[] DpapiEntropy = Encoding.UTF8.GetBytes("IdleDeckPessoal");
 
     public bool Exists => File.Exists(filePath);
