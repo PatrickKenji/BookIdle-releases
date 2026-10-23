@@ -48,7 +48,8 @@ public sealed class MemoryMonitor : IDisposable
         }
     }
 
-    private static List<ulong> RootFrames(CoreWebView2ProcessExtendedInfo info)
+    /// <summary>Frames principais (de topo) que usam este processo.</summary>
+    internal static List<ulong> RootFrames(CoreWebView2ProcessExtendedInfo info)
     {
         var roots = new List<ulong>();
         foreach (var frame in info.AssociatedFrameInfos)

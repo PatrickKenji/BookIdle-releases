@@ -63,3 +63,38 @@ Tudo vem do `eu` de cada conta logada: nível do treinador, pokémon em campo (s
 ## O que não é documentado (medido em jogo pelo próprio módulo)
 
 - Distância andada por abate e quantos selvagens ficam juntos (densidade): medidos pelas mensagens `campo`/`campo.init` (posições do herói e dos selvagens) na hunt em que a conta está, guardados por hunt; padrão para hunts nunca medidas. Segundo a Wiki, de Unova em diante todas as áreas têm o mesmo ritmo.
+
+## Bônus de live: Twitch e Kick (`pokepedia.mjs` §2b, `i18n.mjs`)
+
+Fonte: seção `bonusLive` da Pokepédia + textos `kick.*`/`twitch.*` do i18n (constantes no topo do pokepedia: `PCT_TWITCH=15`, `PCT_TWITCH_EXTRA=2.5`, `PCT_KICK=15`, `MIN_KICK=60`, `CUSTO_KICK={xp:300, captura:500, shiny:1000}`).
+
+**Twitch — % enquanto assiste.** Vincular a conta no painel (Conectar Twitch). Assistir **logado**, e "assistir" = estar **no chat** da live (a Twitch não informa quem vê; o jogo lê quem está conectado ao chat). +15% de XP (treinador e pokémon) enquanto estiver na live; **cada live oficial extra aberta ao mesmo tempo soma +2,5%** (2 = 17,5%, 3 = 20%). Só contam lives com o selo **BÔNUS ATIVADO**. A lista é conferida a cada minuto; o bônus cai alguns minutos depois de sair.
+
+**Kick — horas compradas com pontos do canal.** A Kick **não diz ao jogo quem está assistindo**: o sinal é o **resgate**. Assistindo logado você junta os pontos do canal da própria Kick (10 a cada 5 min; assinante ganha o dobro) e troca nas recompensas que **todo canal oficial** tem:
+
+| Recompensa | Custo | Efeito por 1 h |
+|---|---|---|
+| XP | 300 pontos | +15% XP (treinador e pokémon) |
+| Captura | 500 pontos | +15% Capture Boost |
+| Shiny | 1000 pontos | +15% Secret Lure |
+
+- As **horas se somam** (mesmo bônus 3× no mesmo canal ou em canais diferentes = 3 h); o **percentual NÃO cresce** (fica em +15%).
+- Vínculo é **permanente**: cada conta da Kick só pode ser vinculada a **UM treinador**, sem desvincular/trocar. Resgate sem vínculo é recusado e a Kick devolve os pontos.
+- Só canais **oficiais** têm as recompensas ("pontos ativos"); canal offline: os pontos que já tem continuam resgatáveis.
+- Os % de captura/shiny **multiplicam** o boost da Loja (Capture Boost ×2 × 1,15 = ×2,3).
+- `kick.desligado`: "O bônus da Kick ainda não está ligado neste servidor" — conferir na linha "Bônus na Kick" do painel.
+
+**Kick, regras da plataforma (help.kick.com):** Channel Points são por canal e não se transferem entre canais; acumulam com o viewer **logado e assistindo**; **espelhamento de tela e picture-in-picture não contam**. Não há regra oficial proibindo várias lives simultâneas — cada canal acumula o seu.
+
+**Contas múltiplas:** como o vínculo é 1 conta da Kick por treinador, cada conta do jogo precisa de uma conta própria da Kick. Farm: N canais oficiais abertos ao mesmo tempo = N × 120 pontos/h (assinante: 240/h) → ~1,6 h de +15% de XP por hora assistida com 4 canais, mais captura/shiny conforme a necessidade.
+
+### Kick: mais de uma live aberta ao mesmo tempo rende pontos em todas?
+
+**Testado em 21/10 pelo Patrick: SIM.** Duas lives de canais oficiais abertas ao mesmo tempo, no mesmo PC e na **mesma conta da Kick**, contabilizaram pontos **nas duas**. A dedução anterior (baseada na FAQ de Drops) estava **errada** — a FAQ de Drops fala de progresso de *campanha de drop*, não dos Channel Points.
+
+O que continua valendo (docs oficiais):
+- Pontos são **por canal** e não se transferem; resgate só no mesmo canal (10 pts/5 min; assinante 20).
+- **PiP e espelhamento de tela não contam** para pontos — a exibição precisa ser "de verdade".
+- Pontos acumulam com o viewer **logado e assistindo**.
+
+Consequência prática: várias lives oficiais abertas na mesma conta somam pontos em paralelo (N canais ≈ N × 120 pontos/h). O que **não** multiplica é o percentual do bônus no jogo — 15% por resgate, e o que empilha é o **tempo**.

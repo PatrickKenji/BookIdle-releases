@@ -376,6 +376,48 @@ public sealed class AccountView : DockPanel
         else core.Reload();
     }
 
+    /// <summary>
+    /// Recarrega a conta num processo novo para devolver a memória ao Windows: o <see cref="Reload"/> reaproveita
+    /// o mesmo processo do renderizador, e a RAM que ele já pegou fica com ele. Encerra o renderizador desta conta;
+    /// o <see cref="Health.KeepAliveService"/> vê a queda e recarrega a página. Nunca apaga cookies/login.
+    /// </summary>
+    public async Task RestartAsync()
+    {
+        if (_web.CoreWebView2 is not { } core) return;
+        int? pid = null;
+        try { pid = await OwnRendererAsync(core); }
+        catch (Exception e) when (e is InvalidOperationException or System.Runtime.InteropServices.COMException) { App.Log(e); }
+        if (pid is null || _web.CoreWebView2 != core)
+        {
+            Reload();
+            return;
+        }
+        Status = AccountStatus.Reloading;
+        try
+        {
+            using var process = System.Diagnostics.Process.GetProcessById(pid.Value);
+            process.Kill();
+        }
+        catch (Exception e) when (e is ArgumentException or InvalidOperationException or System.ComponentModel.Win32Exception)
+        {
+            App.Log(e);
+            Reload();
+        }
+    }
+
+    /// <summary>Processo do renderizador da página principal, só se nenhuma outra conta usar o mesmo processo.</summary>
+    private static async Task<int?> OwnRendererAsync(CoreWebView2 core)
+    {
+        var main = (ulong)core.FrameId;
+        foreach (var info in await core.Environment.GetProcessExtendedInfosAsync())
+        {
+            if (info.ProcessInfo.Kind != CoreWebView2ProcessKind.Renderer) continue;
+            if (!info.AssociatedFrameInfos.Any(f => f.FrameId == main)) continue;
+            return Health.MemoryMonitor.RootFrames(info).All(root => root == main) ? info.ProcessInfo.ProcessId : null;
+        }
+        return null;
+    }
+
     /// <summary>Contas fora da tela pedem menos memória ao navegador, mas continuam rodando.</summary>
     public void SetActive(bool visible)
     {

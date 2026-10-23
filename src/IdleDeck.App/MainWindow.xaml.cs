@@ -1343,7 +1343,7 @@ public partial class MainWindow : Window, IModuleHostServices
     private void ResetAccount(AccountView view)
     {
         _resetPolicy.RecordReset(view.RuntimeId, DateTime.UtcNow);
-        view.Reload();
+        _ = view.RestartAsync();
     }
 
     // ---------- Bandeja ----------
