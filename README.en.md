@@ -2,7 +2,7 @@
 
 **🌐 Language / Idioma / Idioma:** [Português](README.md) · **English** · [Español](README.es.md)
 
-**Account manager and tools for [pokeidle.io](https://pokeidle.io)** — several accounts side by side, TopIdle voting, Twitch live
+**Account manager and tools for [pokeidle.io](https://pokeidle.io)** — several accounts side by side, auto catch, TopIdle voting, Twitch live
 bonuses, hunt ranking and a market sniper. A free, open-source Windows program.
 
 > **Unofficial project.** BookIdle is not affiliated with pokeidle.io, TopIdle, Twitch, Nintendo or The Pokémon Company; all trademarks
@@ -32,8 +32,8 @@ bonuses, hunt ranking and a market sniper. A free, open-source Windows program.
 3. The first time, Windows may show **"Windows protected your PC"**: the installer does not have a paid digital signature. Click
    **More info → Run anyway**. If you prefer, the source code is right here for you to inspect and build yourself.
 
-BookIdle **updates itself**: it checks for new versions when it opens and every hour, tells you, and updates with one click, downloading
-only what changed.
+BookIdle **tells you when there is a new version**: it checks when it opens and every hour, shows what changes, and only updates when you
+click **Update**, downloading only what changed. After restarting, it shows the version's changes in detail.
 
 Requires **Windows 10 or 11**.
 
@@ -78,6 +78,8 @@ is only ever sent to Twitch.
 - **Memory under control:** shows each account's RAM, automatically reloads the one that goes over the limit you set, and has a
   **Reset profile** button. Hidden accounts are not slowed down (option).
 - **Ad and tracker blocking**, configurable by domain list.
+- **Per-account auto catch** (for players without VIP): the **Auto catch** button on each account (or the 🎯 on the window's bar)
+  makes the app click that account's fallen pokémon by itself, every second. It starts off and is saved per account.
 - **Optional automatic login:** fills in the game login from the Vault and, on Google, picks the account from the list.
 - **Game profiles:** besides PokeIdle you can create profiles for other web games (see [Other games](#other-idle-games)).
 

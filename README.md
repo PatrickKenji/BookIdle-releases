@@ -2,7 +2,7 @@
 
 **🌐 Language / Idioma / Idioma:** **Português** · [English](README.en.md) · [Español](README.es.md)
 
-**Gerenciador de contas e ferramentas para o [pokeidle.io](https://pokeidle.io)** — várias contas lado a lado, voto no TopIdle, bônus de
+**Gerenciador de contas e ferramentas para o [pokeidle.io](https://pokeidle.io)** — várias contas lado a lado, captura automática, voto no TopIdle, bônus de
 live da Twitch, ranking de hunts e sniper do mercado. Programa de Windows, de código aberto e gratuito.
 
 > **Projeto não oficial.** O BookIdle não tem ligação com o pokeidle.io, o TopIdle, a Twitch, a Nintendo ou a The Pokémon Company; todas as
@@ -32,8 +32,8 @@ live da Twitch, ranking de hunts e sniper do mercado. Programa de Windows, de c�
 3. Na primeira vez o Windows pode mostrar **"O Windows protegeu seu PC"**: o instalador não tem assinatura digital paga. Clique em
    **Mais informações → Executar assim mesmo**. Se preferir, o código está aqui para você conferir e compilar sozinho.
 
-O BookIdle **se atualiza sozinho**: ele confere as versões novas ao abrir e de hora em hora, avisa e atualiza com um clique, baixando só o
-que mudou.
+O BookIdle **avisa quando há versão nova**: ele confere ao abrir e de hora em hora, mostra o que muda e só atualiza quando você clica em
+**Atualizar**, baixando só o que mudou. Depois de reiniciar, mostra as novidades da versão em detalhe.
 
 Precisa de **Windows 10 ou 11**.
 
@@ -77,6 +77,8 @@ entrar nos chats dos canais de bônus com uma conexão leve, **sem abrir um nave
 - **Memória sob controle:** mostra a RAM de cada conta, recarrega sozinha a que passar do limite que você definir e tem o botão
   **Resetar perfil**. Contas escondidas não são desaceleradas (opção).
 - **Bloqueio de anúncios e rastreadores** configurável por lista de domínios.
+- **Captura automática por conta** (para quem não tem o VIP): o botão **Captura auto** em cada conta (ou o 🎯 na barrinha da janela)
+  faz o app clicar sozinho nos pokémons caídos daquela conta, a cada segundo. Começa desligado e fica salvo por conta.
 - **Login automático opcional:** preenche o login do jogo com o que está no Cofre e, no Google, escolhe a conta na lista.
 - **Perfis de jogo:** além do PokeIdle você pode criar perfis para outros jogos web (veja [Outros jogos](#outros-jogos-idle)).
 

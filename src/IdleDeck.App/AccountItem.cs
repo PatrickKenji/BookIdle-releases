@@ -3,7 +3,6 @@ using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Media;
 using IdleDeck.App.Browser;
-using IdleDeck.Core.Modules;
 using IdleDeck.Core.Profiles;
 using IdleDeck.Core.Settings;
 using IdleDeck.Core.Vote;
@@ -21,11 +20,13 @@ public sealed class AccountItem : INotifyPropertyChanged
     private bool _isRenaming;
     private LoginMethod _login;
     private bool _isMuted;
+    private bool _isAutoCatch;
 
     public AccountItem(AccountView view)
     {
         View = view;
         _isMuted = view.Config.Muted;
+        _isAutoCatch = view.Config.AutoCatch;
         _name = view.Config.Name;
         _login = view.Config.Login;
         var palette = (Array)Application.Current.Resources["AvatarPalette"];
@@ -118,6 +119,24 @@ public sealed class AccountItem : INotifyPropertyChanged
         }
     }
 
+    // ---------- Captura automática ----------
+
+    /// <summary>Clica sozinho nos pokémons caídos desta conta (o que o VIP faz no jogo).</summary>
+    public bool IsAutoCatch
+    {
+        get => _isAutoCatch;
+        set
+        {
+            if (!Set(ref _isAutoCatch, value)) return;
+            OnPropertyChanged(nameof(AutoCatchLabel));
+            OnPropertyChanged(nameof(AutoCatchButtonLabel));
+        }
+    }
+
+    public string AutoCatchLabel => IsAutoCatch ? Loc.T("🎯  Captura automática: ligada") : Loc.T("🎯  Captura automática: desligada");
+
+    public string AutoCatchButtonLabel => IsAutoCatch ? Loc.T("Captura auto: ligada") : Loc.T("Captura auto: desligada");
+
     // ---------- Twitch ----------
 
     private TwitchIcon _twitchIcon = TwitchIcon.Hidden;
@@ -166,8 +185,7 @@ public sealed class AccountItem : INotifyPropertyChanged
     // ---------- Voto no TopIdle ----------
 
     /// <summary>O voto só existe para o PokeIdle: o host do perfil casa com pokeidle.io.</summary>
-    public bool CanVote =>
-        Uri.TryCreate(View.Profile.Url, UriKind.Absolute, out var uri) && ModuleRouter.HostMatches(uri.Host, "pokeidle.io");
+    public bool CanVote => View.IsPokeIdle;
 
     public Visibility VoteVisibility => CanVote ? Visibility.Visible : Visibility.Collapsed;
 

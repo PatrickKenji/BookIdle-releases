@@ -98,3 +98,32 @@ O que continua valendo (docs oficiais):
 - Pontos acumulam com o viewer **logado e assistindo**.
 
 Consequência prática: várias lives oficiais abertas na mesma conta somam pontos em paralelo (N canais ≈ N × 120 pontos/h). O que **não** multiplica é o percentual do bônus no jogo — 15% por resgate, e o que empilha é o **tempo**.
+
+### Pendente: replicar na Kick o que fizemos na Twitch (presença só pelo chat)
+
+**Ideia (22/10, Patrick):** na Twitch o app não abre o vídeo de cada canal: uma conexão leve de chat por conta (`TwitchChatConnection`) basta para o jogo contar a presença. Fazer o equivalente na Kick — login pelo site no WebView2 da conta, cookies/sessão do perfil, e uma conexão leve de chat por canal em vez de uma página de vídeo por canal (muito menos RAM).
+
+**NÃO TESTADO — a dúvida é se só o chat rende pontos.** Na Twitch a presença no chat é o que o jogo lê; na Kick o sinal é o resgate, e os pontos do canal talvez dependam do **vídeo sendo exibido** (a Kick diz "logado e assistindo"; PiP e espelhamento já não contam, o que sugere checagem de exibição real). Se só o chat não render pontos, a alternativa é manter o player (talvez mudo, em baixa qualidade) mas só nos canais necessários.
+
+**Teste a fazer antes de implementar** (conta vinculada, canal oficial, 2 janelas de comparação):
+1. Conta logada com **só o chat** aberto (sem player): ver se o saldo de pontos sobe após 5–10 min (esperado: +10, ou +20 se assinante).
+2. Mesma coisa com o player aberto e silenciado/qualidade mínima, para ter a linha de base.
+3. Se o chat sozinho render: ver como a Kick entrega o chat (WebSocket Pusher público de `chatroom`; conferir se precisa de login para contar presença) antes de desenhar a conexão.
+
+Até o teste, **não implementar**. Resultado do teste vai nesta seção.
+
+**Resultado (22/10, Patrick): só o chat NÃO rende pontos.** Precisa estar logado **e** com a live aberta inteira (vídeo). O jeito da Twitch (só chat) não serve para a Kick.
+
+**Investigação inicial do site (22/10, sem login nosso, só observando):** ao abrir um canal o site chama `websockets.kick.com/viewer/v1/token` (indício de um WebSocket de "espectador" separado do player), `kick.com/current-viewers`, `kick.com/api/v2/channels/<slug>/points` e `.../channel-points/channel-settings`, além de `web.kick.com/api/v1/realtime/auth/*`. Um observador de `fetch`/`WebSocket` na thread da página não viu heartbeat repetido em 30 s nem WebSocket aberto (pode estar em Web Worker ou ter sido aberto antes do observador). **Não confirmado** que esse sinal é o que conta os pontos.
+
+**Teste com live aberta (22/10, canal yetz, conta logada, ~10,5 min observados):** saldo 130 → 140 aos ~5,5 min (10 pontos, ritmo oficial; não precisou de 10 min). Durante todo o teste o vídeo estava tocando. O site manda um **batimento a cada 60 s**: `kick.com/current-viewers`, `web.kick.com/api/v1/realtime/connection` e `web.kick.com/api/v1/realtime/channels/<id>/chat/connection`. Na carga inicial também chama `realtime/auth/connection`, `realtime/auth/channel` e `stream/<id>/playback`. Nenhuma chamada nova coincidiu com o aumento dos pontos (o crédito parece vir do servidor). **Ainda não testado:** se esses batimentos sozinhos bastam, ou se a Kick exige o vídeo tocando (ex.: pela sessão de playback). Não foi feita nenhuma chamada manual a esses endpoints.
+
+**Correção (22/10, observando o formato dos batimentos):** os três sinais de 60 s provavelmente **NÃO** são a presença. `current-viewers?ids[]=` é só a consulta de contagem de espectadores (a resposta é a contagem). `POST realtime/connection` e `POST realtime/channels/<id>/chat/connection` (corpo `client,capabilities`, resposta `connections,mode`) parecem a negociação da conexão de chat — coerente com "só o chat não rende pontos". Todos usam cookie + cabeçalho `authorization` + `x-app-platform`. O candidato a sinal de presença continua sendo o WebSocket `websockets.kick.com/viewer/v1/*`, que só aparece na carga inicial da página (não reabre ao trocar de canal pelo site) e **não foi possível observar** com observadores injetados depois do carregamento. Para ver os quadros dele seria preciso um navegador de teste com depuração (CDP) e login do Patrick nele.
+
+**Protocolo da presença na Kick, observado (22/10, Edge de teste com depuração, só leitura):** a presença é um WebSocket de espectador separado do vídeo e do chat. Sequência: `GET websockets.kick.com/viewer/v1/token` (cookie `session_token` como Bearer, resposta `{token}`) → `wss://websockets.kick.com/viewer/v1/connect?token=…`. Mensagens do cliente: `user_event` `tracking.user.watch.livestream` com `channel_id`, `livestream_id` e `vod_id` (na abertura e a cada ~45–75 s); `channel_handshake` com `channelId` a cada 15 s; `ping` a cada 30 s (resposta `pong`). `livestream_id` e `vod_id` vêm de `GET kick.com/api/v2/channels/<slug>/info` (objeto da livestream). O vídeo (HLS) corre em paralelo, mas não passa pelos servidores da Kick. Também aparece para a página inicial (player de destaque).
+
+**NÃO validado — teste barrado:** o passo seguinte era abrir esse WebSocket numa aba sem player e ver se o saldo sobe (isso responderia "os sinais bastam?"). O teste foi barrado pela checagem automática de permissões (classificado como simular espectador na Kick) e não foi contornado. Para rodar, o Patrick precisa liberar explicitamente (regra de permissão) ou fazer o teste por conta própria. Se for testar: canal único, conta de teste, sinais iguais aos do site, saldo lido por `GET /api/v2/channels/<slug>/points`.
+
+**Canais parceiros na Kick (lista do Patrick, 22/10):** yetz, guaxilol1, tftoddy, axt, rodil, mandiocaa, faturetosl, matta, luccatv, patopapao2, clovaobengalalol, biscoitao, techzz, dersin2k (14 canais). A lista oficial fica dentro do jogo, atrás do login; conferir lá se mudar.
+
+**Decisão pendente:** imitar o sinal de espectador sem vídeo seria simular presença (a Kick pode tratar como viewbot, e a conta fica vinculada para sempre a um treinador). Alternativa dentro das regras: player real por canal, mas o mais leve possível (mudo, qualidade mínima, só nos canais necessários).

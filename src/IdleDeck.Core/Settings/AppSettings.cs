@@ -22,7 +22,8 @@ public record AccountConfig(
     LoginMethod Login = LoginMethod.None,
     bool Muted = false,
     DateTime? LastVoteUtc = null,
-    string? TwitchLogin = null);
+    string? TwitchLogin = null,
+    bool AutoCatch = false);
 
 /// <summary>Um jogo: URL, limite de contas e as contas dele.</summary>
 public class GameProfile
@@ -70,6 +71,9 @@ public class AppSettings
 
     /// <summary>"auto" (segue o Windows), "pt", "en" ou "es". Vale ao reiniciar o app.</summary>
     public string Language { get; set; } = Localization.Loc.Auto;
+
+    /// <summary>Versão do app na última abertura: quando muda, o app mostra o que mudou (null = versão anterior ao registro).</summary>
+    public string? LastRunVersion { get; set; }
 
     /// <summary>Menu lateral recolhido (vira uma barra estreita com o logo e os quadrados das contas).</summary>
     public bool SidebarCollapsed { get; set; }

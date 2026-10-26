@@ -346,5 +346,16 @@
   "Esperando o jogo conectar…": "Waiting for the game to connect…",
   "Não consegui ler o estado do jogo (estado-delta): {0}": "Could not read the game state (state-delta): {0}",
   "Erro no cálculo: {0}": "Calculation error: {0}",
-  "Nenhuma conta.": "No accounts."
+  "Nenhuma conta.": "No accounts.",
+  "Captura automática ligada: clique para desligar": "Auto catch on: click to turn off",
+  "Captura automática desligada: clique para ligar (para quem não tem o VIP)": "Auto catch off: click to turn on (for players without VIP)",
+  "🎯  Captura automática: ligada": "🎯  Auto catch: on",
+  "🎯  Captura automática: desligada": "🎯  Auto catch: off",
+  "Captura auto: ligada": "Auto catch: on",
+  "Captura auto: desligada": "Auto catch: off",
+  "Clica sozinho nos pokémons caídos desta conta, a cada segundo (para quem não tem o VIP).": "Clicks this account's fallen pokémon by itself, every second (for players without VIP).",
+  "Há uma versão nova do BookIdle ({0}); esta é a {1}.\n\nO que muda:\n{2}\n\nAtualizar agora? O app fecha e abre de novo sozinho, e as contas continuam logadas.": "A new version of BookIdle is available ({0}); this is {1}.\n\nWhat changes:\n{2}\n\nUpdate now? The app closes and reopens by itself, and your accounts stay logged in.",
+  "Atualizar": "Update",
+  "Agora não": "Not now",
+  "Novidades da versão {0}": "What's new in version {0}"
 }

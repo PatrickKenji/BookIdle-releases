@@ -346,5 +346,16 @@
   "Esperando o jogo conectar…": "Esperando a que el juego se conecte…",
   "Não consegui ler o estado do jogo (estado-delta): {0}": "No pude leer el estado del juego (estado-delta): {0}",
   "Erro no cálculo: {0}": "Error en el cálculo: {0}",
-  "Nenhuma conta.": "Ninguna cuenta."
+  "Nenhuma conta.": "Ninguna cuenta.",
+  "Captura automática ligada: clique para desligar": "Captura automática activada: haz clic para desactivarla",
+  "Captura automática desligada: clique para ligar (para quem não tem o VIP)": "Captura automática desactivada: haz clic para activarla (para quien no tiene VIP)",
+  "🎯  Captura automática: ligada": "🎯  Captura automática: activada",
+  "🎯  Captura automática: desligada": "🎯  Captura automática: desactivada",
+  "Captura auto: ligada": "Captura auto: activada",
+  "Captura auto: desligada": "Captura auto: desactivada",
+  "Clica sozinho nos pokémons caídos desta conta, a cada segundo (para quem não tem o VIP).": "Hace clic solo en los pokémon caídos de esta cuenta, cada segundo (para quien no tiene VIP).",
+  "Há uma versão nova do BookIdle ({0}); esta é a {1}.\n\nO que muda:\n{2}\n\nAtualizar agora? O app fecha e abre de novo sozinho, e as contas continuam logadas.": "Hay una versión nueva de BookIdle ({0}); esta es la {1}.\n\nQué cambia:\n{2}\n\n¿Actualizar ahora? La aplicación se cierra y se abre sola, y las cuentas siguen con la sesión iniciada.",
+  "Atualizar": "Actualizar",
+  "Agora não": "Ahora no",
+  "Novidades da versão {0}": "Novedades de la versión {0}"
 }

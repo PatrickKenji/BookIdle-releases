@@ -2,7 +2,7 @@
 
 **🌐 Language / Idioma / Idioma:** [Português](README.md) · [English](README.en.md) · **Español**
 
-**Gestor de cuentas y herramientas para [pokeidle.io](https://pokeidle.io)** — varias cuentas lado a lado, voto en TopIdle, bonos de
+**Gestor de cuentas y herramientas para [pokeidle.io](https://pokeidle.io)** — varias cuentas lado a lado, captura automática, voto en TopIdle, bonos de
 directos de Twitch, ranking de hunts y sniper del mercado. Programa de Windows, de código abierto y gratuito.
 
 > **Proyecto no oficial.** BookIdle no tiene ninguna relación con pokeidle.io, TopIdle, Twitch, Nintendo ni The Pokémon Company; todas las
@@ -32,8 +32,8 @@ directos de Twitch, ranking de hunts y sniper del mercado. Programa de Windows, 
 3. La primera vez Windows puede mostrar **"Windows protegió tu PC"**: el instalador no tiene firma digital de pago. Haz clic en
    **Más información → Ejecutar de todas formas**. Si prefieres, el código está aquí para que lo revises y lo compiles tú mismo.
 
-BookIdle **se actualiza solo**: comprueba las versiones nuevas al abrir y cada hora, te avisa y se actualiza con un clic, descargando solo
-lo que cambió.
+BookIdle **avisa cuando hay una versión nueva**: comprueba al abrir y cada hora, muestra lo que cambia y solo se actualiza cuando haces clic
+en **Actualizar**, descargando solo lo que cambió. Después de reiniciar, muestra las novedades de la versión en detalle.
 
 Requiere **Windows 10 u 11**.
 
@@ -78,6 +78,8 @@ Ese inicio de sesión solo se envía a Twitch.
 - **Memoria bajo control:** muestra la RAM de cada cuenta, recarga sola la que pase del límite que definas y tiene el botón
   **Restablecer perfil**. Las cuentas ocultas no se ralentizan (opción).
 - **Bloqueo de anuncios y rastreadores** configurable por lista de dominios.
+- **Captura automática por cuenta** (para quien no tiene VIP): el botón **Captura auto** de cada cuenta (o el 🎯 en la barra de la
+  ventana) hace que la aplicación haga clic sola en los pokémon caídos de esa cuenta, cada segundo. Empieza desactivado y se guarda por cuenta.
 - **Inicio de sesión automático opcional:** rellena el login del juego con lo que hay en el Cofre y, en Google, elige la cuenta de la lista.
 - **Perfiles de juego:** además de PokeIdle puedes crear perfiles para otros juegos web (consulta [Otros juegos](#otros-juegos-idle)).
 

@@ -1,4 +1,6 @@
+using System.IO;
 using System.Reflection;
+using IdleDeck.Core.Updates;
 using Velopack;
 using Velopack.Sources;
 
@@ -58,4 +60,16 @@ public sealed class AppUpdater
     public void ApplyAndRestart(UpdateInfo update) => _manager?.ApplyUpdatesAndRestart(update);
 
     public static string VersionOf(UpdateInfo update) => update.TargetFullRelease.Version.ToString();
+
+    /// <summary>Notas da versão nova, publicadas junto com ela (<c>vpk pack --releaseNotes</c>).</summary>
+    public static ReleaseNotes? NotesOf(UpdateInfo update) => ReleaseNotes.Parse(update.TargetFullRelease.NotesMarkdown, Loc.Code);
+
+    /// <summary>Notas desta versão, embutidas no executável (<c>release-notes/X.Y.Z.md</c>).</summary>
+    public static ReleaseNotes? CurrentNotes()
+    {
+        using var stream = typeof(AppUpdater).Assembly.GetManifestResourceStream($"ReleaseNotes.{AppVersion.Current}.md");
+        if (stream is null) return null;
+        using var reader = new StreamReader(stream);
+        return ReleaseNotes.Parse(reader.ReadToEnd(), Loc.Code);
+    }
 }

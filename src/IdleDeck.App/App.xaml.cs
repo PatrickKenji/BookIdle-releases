@@ -15,12 +15,13 @@ public partial class App : Application
 
     /// <summary>
     /// O Velopack trata os argumentos de instalação/atualização (--veloapp-*) e sai; no uso normal volta na hora.
-    /// Por isso roda antes de qualquer coisa do WPF.
+    /// Por isso roda antes de qualquer coisa do WPF. Uma versão baixada e não aplicada NÃO entra sozinha ao abrir:
+    /// o app só se atualiza depois do "Atualizar" no aviso.
     /// </summary>
     [STAThread]
     public static void Main(string[] args)
     {
-        VelopackApp.Build().Run();
+        VelopackApp.Build().SetAutoApplyOnStartup(false).Run();
         var app = new App();
         app.InitializeComponent();
         app.Run();
@@ -56,6 +57,7 @@ public partial class App : Application
     {
         var store = new SettingsStore(AppPaths.SettingsFile);
         Loc.Use(Loc.Auto); // primeira execução: o perfil padrão já nasce no idioma do Windows
+        var settingsExisted = File.Exists(AppPaths.SettingsFile);
         var settings = store.Load();
         Loc.Use(settings.Language);
         // O renome mudou o caminho do .exe: regrava a entrada de "iniciar com o Windows", se estiver ligada.
@@ -68,6 +70,7 @@ public partial class App : Application
         var window = new MainWindow(settings, store)
         {
             StartInTray = e.Args.Contains(StartupRegistration.TrayArgument),
+            SettingsExisted = settingsExisted,
         };
         if (window.StartInTray) window.WindowState = WindowState.Minimized;
         SingleInstance.ListenForShowRequests(() => Dispatcher.BeginInvoke(window.ShowFromTray));

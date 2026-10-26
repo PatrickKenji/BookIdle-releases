@@ -30,6 +30,9 @@
     <EmbeddedResource Include="Scripts\topidle-status.js" LogicalName="Scripts.topidle-status.js" />
     <EmbeddedResource Include="Scripts\market-probe.js" LogicalName="Scripts.market-probe.js" />
     <EmbeddedResource Include="Scripts\market-bridge.js" LogicalName="Scripts.market-bridge.js" />
+    <EmbeddedResource Include="Scripts\auto-catch.js" LogicalName="Scripts.auto-catch.js" />
+    <!-- Notas de cada versão: a versão nova mostra as suas ao abrir depois de atualizar -->
+    <EmbeddedResource Include="..\..\release-notes\*.md" Exclude="..\..\release-notes\README.md" LogicalName="ReleaseNotes.%(Filename).md" />
     <EmbeddedResource Include="Modules\Hunt\*.js" LogicalName="Modules.Hunt.%(Filename)%(Extension)" />
     <Resource Include="Resources\Fonts\*.ttf" />
     <Resource Include="Resources\AppIcon.ico" />

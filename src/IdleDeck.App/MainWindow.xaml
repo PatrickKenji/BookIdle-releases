@@ -25,6 +25,8 @@
                                   ToolTip="{l:T 'Liga a Twitch desta conta: ela fica presente no chat das lives de bônus, em segundo plano.'}" />
                         <MenuItem Header="{Binding TwitchDisconnectLabel}" Click="DisconnectTwitch_Click" Tag="{Binding}" Visibility="{Binding TwitchDisconnectVisibility}" />
                         <MenuItem Header="{Binding MuteLabel}" Click="ToggleMute_Click" Tag="{Binding}" />
+                        <MenuItem Header="{Binding AutoCatchLabel}" Click="ToggleAutoCatch_Click" Tag="{Binding}" Visibility="{Binding VoteVisibility}"
+                                  ToolTip="{l:T 'Clica sozinho nos pokémons caídos desta conta, a cada segundo (para quem não tem o VIP).'}" />
                         <MenuItem Header="{Binding ProbeLabel}" Click="MarketProbe_Click" Tag="{Binding}"
                                   ToolTip="{l:T 'Diagnóstico: registra só a forma do tráfego do jogo (sem chaves) para aprendermos como o mercado funciona.'}" />
                         <MenuItem Header="{l:T '▣  Reencaixar tela'}" Click="ResyncView_Click" Tag="{Binding}" ToolTip="{l:T 'Corrige a janela do jogo que ficou deslocada ou com faixa vazia'}" />
@@ -67,6 +69,10 @@
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="*" />
                             </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
                             <Button Grid.Column="0" Content="{Binding VoteButtonLabel}" Click="Vote_Click" Tag="{Binding}"
                                     FontSize="10" Padding="4,3" Margin="0,0,3,0"
                                     ToolTip="{l:T 'Abre a página de voto do TopIdle com a sessão desta conta. Você vota; o app não clica por você. Dá para votar de novo a cada 24 h.'}">
@@ -93,6 +99,20 @@
                                             </DataTrigger>
                                             <DataTrigger Binding="{Binding TwitchConnected}" Value="True">
                                                 <Setter Property="Foreground" Value="{DynamicResource Green}" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Button.Style>
+                            </Button>
+                            <Button Grid.Row="1" Grid.ColumnSpan="2" Content="{Binding AutoCatchButtonLabel}" Click="ToggleAutoCatch_Click" Tag="{Binding}"
+                                    FontSize="10" Padding="4,3" Margin="0,6,0,0"
+                                    ToolTip="{l:T 'Clica sozinho nos pokémons caídos desta conta, a cada segundo (para quem não tem o VIP).'}">
+                                <Button.Style>
+                                    <Style TargetType="Button" BasedOn="{StaticResource ArcadeButton}">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsAutoCatch}" Value="True">
+                                                <Setter Property="Background" Value="{DynamicResource Green}" />
+                                                <Setter Property="Foreground" Value="{DynamicResource Outline}" />
                                             </DataTrigger>
                                         </Style.Triggers>
                                     </Style>

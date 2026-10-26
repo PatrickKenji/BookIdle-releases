@@ -4,6 +4,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using IdleDeck.Core.Modules;
 using IdleDeck.Core.Net;
 using IdleDeck.Core.Settings;
 using Microsoft.Web.WebView2.Core;
@@ -26,6 +27,9 @@ public sealed class AccountView : DockPanel
     private double _zoom;
     private readonly TextBlock _headerText;
     private readonly Button _muteButton;
+    private readonly Button _autoCatchButton;
+    /// <summary>Script que deixa a chave da captura automática ligada/desligada em cada documento novo desta conta.</summary>
+    private string? _autoCatchScriptId;
     /// <summary>Área do jogo: o WebView2 e, por cima dele só durante o arrasto, a "foto" (cobertura).</summary>
     private readonly Grid _body = new();
     private readonly Border _cover;
@@ -49,8 +53,11 @@ public sealed class AccountView : DockPanel
         expand.Click += (_, _) => ExpandRequested?.Invoke(this, EventArgs.Empty);
         _muteButton = HeaderButton("🔊", Loc.T("Mutar esta conta"));
         _muteButton.Click += (_, _) => MuteToggleRequested?.Invoke(this, EventArgs.Empty);
+        _autoCatchButton = HeaderButton("🎯", "");
+        _autoCatchButton.Click += (_, _) => AutoCatchToggleRequested?.Invoke(this, EventArgs.Empty);
+        _autoCatchButton.Visibility = IsPokeIdle ? Visibility.Visible : Visibility.Collapsed;
         var bar = new DockPanel { LastChildFill = true };
-        foreach (var button in new[] { expand, _muteButton })
+        foreach (var button in new[] { expand, _muteButton, _autoCatchButton })
         {
             SetDock(button, Dock.Right);
             bar.Children.Add(button);
@@ -163,6 +170,10 @@ public sealed class AccountView : DockPanel
     public GameProfile Profile { get; }
     public AccountConfig Config { get; private set; }
 
+    /// <summary>A conta é do PokeIdle (só lá existem o voto e a captura automática).</summary>
+    public bool IsPokeIdle =>
+        Uri.TryCreate(Profile.Url, UriKind.Absolute, out var uri) && ModuleRouter.HostMatches(uri.Host, "pokeidle.io");
+
     /// <summary>Endereço inicial da conta: a URL do perfil de jogo.</summary>
     public string Url => Profile.Url;
     public CoreWebView2? Core => _web.CoreWebView2;
@@ -184,6 +195,8 @@ public sealed class AccountView : DockPanel
     public event EventHandler? ExpandRequested;
     /// <summary>O botão de mudo da barrinha.</summary>
     public event EventHandler? MuteToggleRequested;
+    /// <summary>O botão 🎯 da barrinha (captura automática).</summary>
+    public event EventHandler? AutoCatchToggleRequested;
     /// <summary>O usuário mudou o zoom dentro da página (Ctrl+scroll, Ctrl+−/+).</summary>
     public event EventHandler? ZoomChanged;
 
@@ -222,9 +235,31 @@ public sealed class AccountView : DockPanel
 
     public void UpdateConfig(AccountConfig config)
     {
+        var autoCatchChanged = config.AutoCatch != Config.AutoCatch;
         Config = config;
         UpdateHeader();
-        if (_web.CoreWebView2 is { } core) core.IsMuted = config.Muted;
+        if (_web.CoreWebView2 is { } core)
+        {
+            core.IsMuted = config.Muted;
+            if (autoCatchChanged) _ = ApplyAutoCatchAsync(core);
+        }
+    }
+
+    /// <summary>
+    /// Liga/desliga a captura automática: troca o script que vale para as próximas páginas e muda a chave na
+    /// página aberta agora (o laço do auto-catch.js lê a chave a cada segundo; não precisa recarregar).
+    /// </summary>
+    private async Task ApplyAutoCatchAsync(CoreWebView2 core)
+    {
+        var script = $"window.__bookidleAutoCatch = {(Config.AutoCatch ? "true" : "false")};";
+        try
+        {
+            if (_autoCatchScriptId is { } old) core.RemoveScriptToExecuteOnDocumentCreated(old);
+            _autoCatchScriptId = null;
+            _autoCatchScriptId = await core.AddScriptToExecuteOnDocumentCreatedAsync(script);
+            await core.ExecuteScriptAsync(script);
+        }
+        catch (Exception e) when (e is InvalidOperationException or System.Runtime.InteropServices.COMException) { App.Log(e); }
     }
 
     public bool IsMuted => Config.Muted;
@@ -234,6 +269,10 @@ public sealed class AccountView : DockPanel
         _headerText.Text = Config.Name;
         _muteButton.Content = Config.Muted ? "🔇" : "🔊";
         _muteButton.ToolTip = Config.Muted ? Loc.T("Tirar o mudo desta conta") : Loc.T("Mutar esta conta");
+        _autoCatchButton.Opacity = Config.AutoCatch ? 1 : 0.4;
+        _autoCatchButton.ToolTip = Config.AutoCatch
+            ? Loc.T("Captura automática ligada: clique para desligar")
+            : Loc.T("Captura automática desligada: clique para ligar (para quem não tem o VIP)");
     }
 
     /// <summary>Botão da barrinha: pequeno e sem moldura; o clique não vira "dar destaque".</summary>
@@ -266,6 +305,7 @@ public sealed class AccountView : DockPanel
         try { _web.Dispose(); }
         catch (Exception e) when (e is InvalidOperationException or System.Runtime.InteropServices.COMException) { App.Log(e); }
         _web = NewWebView();
+        _autoCatchScriptId = null; // o script era do navegador antigo
         AttachWeb();
         _body.Children.Insert(0, _web);
         Status = AccountStatus.Loading;
@@ -353,6 +393,7 @@ public sealed class AccountView : DockPanel
 
         foreach (var script in _startupScripts)
             await core.AddScriptToExecuteOnDocumentCreatedAsync(script);
+        await ApplyAutoCatchAsync(core);
     }
 
     /// <summary>Script injetado em todo documento desta conta (sobrevive a recargas e recriações).</summary>

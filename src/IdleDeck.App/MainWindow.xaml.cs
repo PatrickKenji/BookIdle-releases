@@ -51,6 +51,7 @@ public partial class MainWindow : Window, IModuleHostServices
     private static readonly string TopIdleVoteScript = AccountWebWindow.LoadScript("Scripts.topidle-vote.js");
     /// <summary>Lê da página do jogo quando foi o último voto e quando libera de novo (vale até para votos feitos fora do app).</summary>
     private static readonly string TopIdleStatusScript = AccountWebWindow.LoadScript("Scripts.topidle-status.js");
+    private static readonly string AutoCatchScript = AccountWebWindow.LoadScript("Scripts.auto-catch.js");
     private const string TopIdleStatusPrefix = "topidle:status:";
     private readonly TwitchService _twitch;
     private readonly Dictionary<AccountView, AccountWebWindow> _voteWindows = [];
@@ -111,6 +112,7 @@ public partial class MainWindow : Window, IModuleHostServices
             await browsers;
             // as células já têm o tamanho final: garante que cada WebView2 esteja do tamanho certo
             foreach (var view in _views) view.RealinharTela();
+            ShowWhatsNewIfPending();
         };
     }
 
@@ -170,9 +172,10 @@ public partial class MainWindow : Window, IModuleHostServices
             var version = Updates.AppUpdater.VersionOf(update);
             if (!manual && _declinedVersion == version) return; // já disse "agora não" para esta; não insiste até reabrir
             ShowFromTray();
-            if (!ArcadeDialog.Show(this, Loc.T("Atualização disponível"),
-                    Loc.T("Há uma versão nova do BookIdle ({0}); esta é a {1}.\n\nAtualizar agora? O app fecha e abre de novo sozinho, e as contas continuam logadas.", version, Updates.AppVersion.Current),
-                    ArcadeDialogButtons.YesNo))
+            var message = Updates.AppUpdater.NotesOf(update) is { } notes
+                ? Loc.T("Há uma versão nova do BookIdle ({0}); esta é a {1}.\n\nO que muda:\n{2}\n\nAtualizar agora? O app fecha e abre de novo sozinho, e as contas continuam logadas.", version, Updates.AppVersion.Current, notes.Summary)
+                : Loc.T("Há uma versão nova do BookIdle ({0}); esta é a {1}.\n\nAtualizar agora? O app fecha e abre de novo sozinho, e as contas continuam logadas.", version, Updates.AppVersion.Current);
+            if (!ArcadeDialog.Show(this, Loc.T("Atualização disponível"), message, ArcadeDialogButtons.YesNo, buttonsText: (Loc.T("Atualizar"), Loc.T("Agora não")), guarded: true))
             {
                 _declinedVersion = version;
                 return;
@@ -189,6 +192,30 @@ public partial class MainWindow : Window, IModuleHostServices
             if (manual) ArcadeDialog.Show(this, Loc.T("Atualizações"), Loc.T("Não consegui verificar agora:\n{0}", e.Message), kind: ArcadeDialogKind.Warning);
         }
         finally { _checkingUpdate = false; }
+    }
+
+    // ---------- O que mudou (depois de atualizar) ----------
+
+    /// <summary>Já havia configurações ao abrir (não é a primeira instalação).</summary>
+    public bool SettingsExisted { get; init; }
+
+    private bool _whatsNewChecked;
+
+    /// <summary>
+    /// Na primeira abertura de uma versão nova, mostra as notas detalhadas dela. Se o app abriu na bandeja, espera ele
+    /// aparecer: a versão só fica registrada depois que a pessoa viu (ou se não há nada para mostrar).
+    /// </summary>
+    private void ShowWhatsNewIfPending()
+    {
+        if (_whatsNewChecked || !IsVisible || WindowState == WindowState.Minimized) return;
+        _whatsNewChecked = true;
+        var current = Updates.AppVersion.Current;
+        if (_settings.LastRunVersion == current) return;
+        if (IdleDeck.Core.Updates.ReleaseNotes.ShouldShowAfterUpdate(_settings.LastRunVersion, current, SettingsExisted)
+            && Updates.AppUpdater.CurrentNotes() is { } notes)
+            ArcadeDialog.Show(this, Loc.T("Novidades da versão {0}", current), notes.Details, wide: true);
+        _settings.LastRunVersion = current;
+        SaveSettings();
     }
 
     /// <summary>O app deve abrir de novo depois de fechar (mudança que exige reiniciar o navegador).</summary>
@@ -212,6 +239,7 @@ public partial class MainWindow : Window, IModuleHostServices
         _drag.Attach(view);
         view.ExpandRequested += (_, _) => ExpandAccount(view);
         view.MuteToggleRequested += (_, _) => SetMuted(view, !view.IsMuted);
+        view.AutoCatchToggleRequested += (_, _) => SetAutoCatch(view, !view.Config.AutoCatch);
         view.ZoomChanged += (_, _) => SetProfileZoom(view.Profile, view.Zoom);
         view.WebMessage += (_, message) => OnWebMessage(view, message);
         view.NewWindowRequested += (_, e) =>
@@ -222,6 +250,7 @@ public partial class MainWindow : Window, IModuleHostServices
         };
         _ = view.AddStartupScriptAsync(AutoLoginService.DetectScript);
         _ = view.AddStartupScriptAsync(TopIdleStatusScript);
+        _ = view.AddStartupScriptAsync(AutoCatchScript);
         _ = _modules.RegisterScriptsAsync(view);
         _views.Add(view);
         _items[view] = item;
@@ -905,6 +934,26 @@ public partial class MainWindow : Window, IModuleHostServices
         e.Handled = true;
     }
 
+    // ---------- Captura automática ----------
+
+    /// <summary>Liga/desliga a captura automática de uma conta; fica guardado e volta igual ao abrir o app.</summary>
+    private void SetAutoCatch(AccountView view, bool on)
+    {
+        var accounts = view.Profile.Accounts;
+        var index = accounts.FindIndex(a => a.ProfileName == view.Config.ProfileName);
+        if (index < 0 || accounts[index].AutoCatch == on) return;
+        accounts[index] = accounts[index] with { AutoCatch = on };
+        view.UpdateConfig(accounts[index]);
+        _items[view].IsAutoCatch = on;
+        SaveSettings();
+    }
+
+    private void ToggleAutoCatch_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is FrameworkElement { Tag: AccountItem item }) SetAutoCatch(item.View, !item.View.Config.AutoCatch);
+        e.Handled = true;
+    }
+
     /// <summary>Ícones do mudo geral (🔇 só quando todas estão mudas).</summary>
     private void UpdateMuteUi()
     {
@@ -1354,6 +1403,7 @@ public partial class MainWindow : Window, IModuleHostServices
         WindowState = _restoreState;
         Activate();
         ApplyLayout();
+        Dispatcher.BeginInvoke(ShowWhatsNewIfPending, System.Windows.Threading.DispatcherPriority.ApplicationIdle);
     }
 
     private void HideToTray()
