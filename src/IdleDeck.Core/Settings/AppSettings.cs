@@ -65,6 +65,25 @@ public class AppSettings
     public bool AutoResetEnabled { get; set; } = true;
     public bool DisableBackgroundThrottling { get; set; } = true;
     public bool ExtensionsEnabled { get; set; }
+
+    /// <summary>
+    /// Desenha as contas com a placa de vídeo. Desligado por padrão: medido com 4 contas do PokeIdle, sem a placa
+    /// o processo da GPU cai de ~450 MB (que crescem com as horas) para ~20 MB; a conta ao vivo gasta um pouco
+    /// mais de CPU, mas escondida ou em foto o gasto é o mesmo.
+    /// </summary>
+    public bool UseGpu { get; set; }
+
+    /// <summary>Em Grade e 1+N, as contas fora de foco viram uma foto atualizada de tempos em tempos (o jogo segue rodando).</summary>
+    public bool PhotoMode { get; set; } = true;
+
+    /// <summary>
+    /// De quantos em quantos segundos a foto das contas fora de foco é atualizada. Cada foto acorda a página e a
+    /// redesenha inteira: medido sem a placa de vídeo, a cada 5 s cada conta em foto gastava o dobro de CPU e
+    /// crescia; a cada 10 s, Grade com 4 contas caiu de 28% para 14% de CPU e de 2,2 GB para 1,36 GB.
+    /// </summary>
+    public int PhotoEverySeconds { get; set; } = 10;
+
+    public static readonly int[] PhotoIntervals = [5, 10, 30];
     public bool StartWithWindows { get; set; }
 
     public ThemeKind Theme { get; set; } = ThemeKind.Arcade;
@@ -128,6 +147,7 @@ public class AppSettings
         }
         if (Profiles.All(p => p.Id != SelectedProfileId)) SelectedProfileId = Profiles[0].Id;
         if (MemoryLimitMb < 100) MemoryLimitMb = 600;
+        if (!PhotoIntervals.Contains(PhotoEverySeconds)) PhotoEverySeconds = 10;
         if (!Enum.IsDefined(Theme)) Theme = ThemeKind.Arcade;
         if (Language != Localization.Loc.Auto && Localization.Loc.Languages.All(l => l.Code != Language)) Language = Localization.Loc.Auto;
         BlockedDomains ??= [];

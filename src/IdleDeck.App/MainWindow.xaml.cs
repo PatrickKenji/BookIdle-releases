@@ -452,6 +452,7 @@ public partial class MainWindow : Window, IModuleHostServices
         {
             view.Visibility = Visibility.Collapsed;
             view.SetActive(false);
+            view.StopPhotoMode();
             _items[view].IsFocused = false;
         }
 
@@ -467,7 +468,11 @@ public partial class MainWindow : Window, IModuleHostServices
             view.Margin = multi ? new Thickness(3) : new Thickness(0);
             view.ShowHeader = multi;
             view.IsHighlighted = multi && i == Profile.FocusedAccount;
-            view.SetActive(cell.Visible && windowShown);
+            // Só a conta em destaque fica ao vivo; as outras visíveis viram foto (o jogo segue rodando por trás).
+            var photo = multi && _settings.PhotoMode && cell.Visible && windowShown && i != Profile.FocusedAccount;
+            view.SetActive(cell.Visible && windowShown && !photo);
+            if (photo) view.StartPhotoMode(TimeSpan.FromSeconds(_settings.PhotoEverySeconds));
+            else view.StopPhotoMode();
             _items[view].IsFocused = i == Profile.FocusedAccount;
         }
 
@@ -1409,7 +1414,11 @@ public partial class MainWindow : Window, IModuleHostServices
     private void HideToTray()
     {
         Hide();
-        foreach (var view in _views) view.SetActive(false);
+        foreach (var view in _views)
+        {
+            view.SetActive(false);
+            view.StopPhotoMode(); // escondida, a página sai preta na foto; volta ao mostrar a janela
+        }
     }
 
     protected override void OnStateChanged(EventArgs e)
@@ -1454,6 +1463,7 @@ public partial class MainWindow : Window, IModuleHostServices
         if (window.ShowDialog() != true) return;
 
         SaveSettings();
+        ApplyLayout(); // modo foto ligado/desligado ou com outro intervalo
 
         if (window.RestartRequired && ArcadeDialog.Show(this, Loc.T("Reiniciar"),
                 Loc.T("Algumas mudanças só valem depois de reiniciar o app (todas as contas recarregam). Reiniciar agora?"),

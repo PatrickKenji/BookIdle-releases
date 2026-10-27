@@ -38,6 +38,12 @@ public sealed class AccountView : DockPanel
     private bool _dragMode;
     /// <summary>Conta as entradas no modo de arrasto: uma saída durante a foto invalida a entrada que ainda esperava.</summary>
     private int _dragGeneration;
+    /// <summary>Modo foto: a conta fora de foco mostra uma foto atualizada pelo timer, com a página escondida por trás.</summary>
+    private bool _photoMode;
+    private bool _photoBusy;
+    private System.Windows.Threading.DispatcherTimer? _photoTimer;
+    /// <summary>Página escondida não desenha (a foto sai preta): ao acordar, espera ela pintar antes de fotografar.</summary>
+    private static readonly TimeSpan PhotoWakeDelay = TimeSpan.FromMilliseconds(700);
     private AccountStatus _status = AccountStatus.Loading;
 
     public AccountView(int runtimeId, GameProfile profile, AccountConfig config)
@@ -94,6 +100,10 @@ public sealed class AccountView : DockPanel
             Visibility = Visibility.Collapsed,
             Child = new Grid { Children = { _coverImage, _coverLabel } },
         };
+        _cover.MouseLeftButtonUp += (_, _) =>
+        {
+            if (_photoMode && !_dragMode) HeaderClicked?.Invoke(this, EventArgs.Empty);
+        };
         _body.Children.Add(_web);
         _body.Children.Add(_cover);
         Children.Add(_body);
@@ -124,27 +134,8 @@ public sealed class AccountView : DockPanel
         if (_dragMode) return;
         _dragMode = true;
         var generation = ++_dragGeneration;
-        BitmapImage? picture = null;
-        if (_web.CoreWebView2 is { } core && _web.ActualWidth > 1)
-        {
-            try
-            {
-                using var stream = new MemoryStream();
-                await core.CapturePreviewAsync(CoreWebView2CapturePreviewImageFormat.Png, stream);
-                stream.Position = 0;
-                picture = new BitmapImage();
-                picture.BeginInit();
-                picture.CacheOption = BitmapCacheOption.OnLoad;
-                picture.StreamSource = stream;
-                picture.EndInit();
-                picture.Freeze();
-            }
-            catch (Exception e) when (e is InvalidOperationException or System.Runtime.InteropServices.COMException or NotSupportedException)
-            {
-                App.Log(e);
-                picture = null;
-            }
-        }
+        // No modo foto a página está escondida (sairia preta): a foto que já está na tela serve.
+        var picture = _photoMode && _web.Visibility != Visibility.Visible ? _coverImage.Source as BitmapSource : await CaptureAsync();
         if (generation != _dragGeneration) return; // cancelou (Esc, mouse solto) enquanto a foto era tirada: nada a mostrar
         _coverImage.Source = picture;
         _coverLabel.Text = Config.Name;
@@ -159,10 +150,95 @@ public sealed class AccountView : DockPanel
         if (!_dragMode) return;
         _dragMode = false;
         _dragGeneration++;
+        if (_photoMode && _coverImage.Source is not null) return; // continua como foto; o timer atualiza
+        ShowLive();
+    }
+
+    /// <summary>Foto da página como está na tela agora; null se não deu (página escondida ou sem navegador).</summary>
+    private async Task<BitmapSource?> CaptureAsync()
+    {
+        if (_web.CoreWebView2 is not { } core || _web.ActualWidth <= 1) return null;
+        try
+        {
+            using var stream = new MemoryStream();
+            await core.CapturePreviewAsync(CoreWebView2CapturePreviewImageFormat.Jpeg, stream);
+            stream.Position = 0;
+            var picture = new BitmapImage();
+            picture.BeginInit();
+            picture.CacheOption = BitmapCacheOption.OnLoad;
+            picture.StreamSource = stream;
+            picture.EndInit();
+            picture.Freeze();
+            return picture;
+        }
+        catch (Exception e) when (e is InvalidOperationException or System.Runtime.InteropServices.COMException or NotSupportedException)
+        {
+            App.Log(e);
+            return null;
+        }
+    }
+
+    private void ShowLive()
+    {
         _web.Visibility = Visibility.Visible;
         _cover.Visibility = Visibility.Collapsed;
         _coverImage.Source = null;
         RealinharTela();
+    }
+
+    /// <summary>
+    /// Liga o modo foto (ou só troca o intervalo): a página fica escondida, gastando bem menos RAM, GPU e CPU,
+    /// e a cada <paramref name="every"/> acorda por um instante para tirar uma foto nova. O jogo segue rodando.
+    /// </summary>
+    public void StartPhotoMode(TimeSpan every)
+    {
+        if (_photoTimer is { } timer)
+        {
+            if (timer.Interval != every) timer.Interval = every;
+            return;
+        }
+        _photoMode = true;
+        _cover.Cursor = Cursors.Hand;
+        _photoTimer = new System.Windows.Threading.DispatcherTimer { Interval = every };
+        _photoTimer.Tick += async (_, _) => await TakePhotoAsync();
+        _photoTimer.Start();
+        _ = TakePhotoAsync();
+    }
+
+    /// <summary>Volta a conta ao vivo.</summary>
+    public void StopPhotoMode()
+    {
+        if (!_photoMode) return;
+        _photoMode = false;
+        _photoTimer?.Stop();
+        _photoTimer = null;
+        _cover.Cursor = null;
+        if (!_dragMode) ShowLive(); // no arrasto, a saída dele devolve a página
+    }
+
+    private async Task TakePhotoAsync()
+    {
+        if (!_photoMode || _photoBusy || _dragMode) return;
+        _photoBusy = true;
+        try
+        {
+            if (_web.Visibility != Visibility.Visible)
+            {
+                _web.Visibility = Visibility.Visible; // a página desenha por cima da foto antiga (o WebView2 fica acima do WPF)
+                await Task.Delay(PhotoWakeDelay);
+            }
+            if (!_photoMode || _dragMode) return;
+            // Sem foto (navegador recriando, página carregando), a conta fica ao vivo até a próxima tentativa.
+            if (await CaptureAsync() is not { } picture || !_photoMode || _dragMode) return;
+            _coverImage.Source = picture;
+            _coverLabel.Visibility = Visibility.Collapsed;
+            _cover.Visibility = Visibility.Visible;
+            _web.Visibility = Visibility.Collapsed;
+        }
+        finally
+        {
+            _photoBusy = false;
+        }
     }
 
     /// <summary>Identificador desta conta enquanto o app está aberto (políticas, login e módulos usam ele).</summary>

@@ -16,7 +16,11 @@ public partial class SettingsWindow : Window
 
         AutoReset.IsChecked = settings.AutoResetEnabled;
         MemoryLimit.Text = settings.MemoryLimitMb.ToString();
+        PhotoMode.IsChecked = settings.PhotoMode;
+        PhotoEvery.ItemsSource = AppSettings.PhotoIntervals;
+        PhotoEvery.SelectedItem = settings.PhotoEverySeconds;
         NoThrottling.IsChecked = settings.DisableBackgroundThrottling;
+        UseGpu.IsChecked = settings.UseGpu;
         Extensions.IsChecked = settings.ExtensionsEnabled;
         BlockedDomains.Text = string.Join(Environment.NewLine, settings.BlockedDomains);
         StartWithWindows.IsChecked = settings.StartWithWindows;
@@ -49,6 +53,7 @@ public partial class SettingsWindow : Window
         var language = LanguageBox.SelectedValue as string ?? Loc.Auto;
         RestartRequired = _settings.Language != language
                           || _settings.DisableBackgroundThrottling != (NoThrottling.IsChecked == true)
+                          || _settings.UseGpu != (UseGpu.IsChecked == true)
                           || _settings.ExtensionsEnabled != (Extensions.IsChecked == true)
                           || !_settings.BlockedDomains.SequenceEqual(blocked);
 
@@ -64,7 +69,10 @@ public partial class SettingsWindow : Window
 
         _settings.AutoResetEnabled = AutoReset.IsChecked == true;
         _settings.MemoryLimitMb = limit;
+        _settings.PhotoMode = PhotoMode.IsChecked == true;
+        if (PhotoEvery.SelectedItem is int every) _settings.PhotoEverySeconds = every;
         _settings.DisableBackgroundThrottling = NoThrottling.IsChecked == true;
+        _settings.UseGpu = UseGpu.IsChecked == true;
         _settings.ExtensionsEnabled = Extensions.IsChecked == true;
         _settings.BlockedDomains = blocked;
         _settings.StartWithWindows = StartWithWindows.IsChecked == true;

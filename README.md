@@ -76,6 +76,8 @@ entrar nos chats dos canais de bônus com uma conexão leve, **sem abrir um nave
 - **Bandeja do Windows:** minimizar manda o app para a bandeja; opção de **iniciar com o Windows** já minimizado.
 - **Memória sob controle:** mostra a RAM de cada conta, recarrega sozinha a que passar do limite que você definir e tem o botão
   **Resetar perfil**. Contas escondidas não são desaceleradas (opção).
+- **Modo foto** em Grade e 1+N: só a conta em destaque fica ao vivo; as outras viram uma foto atualizada a cada 10 s (ou 5/30) e o jogo
+  segue rodando por trás. As contas são desenhadas sem a placa de vídeo, o que gasta bem menos RAM (dá para religar nas Configurações).
 - **Bloqueio de anúncios e rastreadores** configurável por lista de domínios.
 - **Captura automática por conta** (para quem não tem o VIP): o botão **Captura auto** em cada conta (ou o 🎯 na barrinha da janela)
   faz o app clicar sozinho nos pokémons caídos daquela conta, a cada segundo. Começa desligado e fica salvo por conta.

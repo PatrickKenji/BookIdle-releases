@@ -77,6 +77,8 @@ is only ever sent to Twitch.
 - **Windows tray:** minimizing sends the app to the tray; option to **start with Windows** already minimized.
 - **Memory under control:** shows each account's RAM, automatically reloads the one that goes over the limit you set, and has a
   **Reset profile** button. Hidden accounts are not slowed down (option).
+- **Picture mode** in Grid and 1+N: only the highlighted account stays live; the others become a picture refreshed every 10 s (or 5/30)
+  and the game keeps running behind it. Accounts are drawn without the graphics card, which uses much less RAM (you can turn it back on in Settings).
 - **Ad and tracker blocking**, configurable by domain list.
 - **Per-account auto catch** (for players without VIP): the **Auto catch** button on each account (or the 🎯 on the window's bar)
   makes the app click that account's fallen pokémon by itself, every second. It starts off and is saved per account.

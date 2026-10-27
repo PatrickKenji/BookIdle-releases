@@ -77,6 +77,8 @@ Ese inicio de sesión solo se envía a Twitch.
 - **Bandeja de Windows:** minimizar envía la aplicación a la bandeja; opción de **iniciar con Windows** ya minimizada.
 - **Memoria bajo control:** muestra la RAM de cada cuenta, recarga sola la que pase del límite que definas y tiene el botón
   **Restablecer perfil**. Las cuentas ocultas no se ralentizan (opción).
+- **Modo foto** en Cuadrícula y 1+N: solo la cuenta destacada queda en vivo; las demás se vuelven una foto actualizada cada 10 s (o 5/30)
+  y el juego sigue funcionando detrás. Las cuentas se dibujan sin la tarjeta gráfica, lo que usa mucha menos RAM (se puede reactivar en Ajustes).
 - **Bloqueo de anuncios y rastreadores** configurable por lista de dominios.
 - **Captura automática por cuenta** (para quien no tiene VIP): el botón **Captura auto** de cada cuenta (o el 🎯 en la barra de la
   ventana) hace que la aplicación haga clic sola en los pokémon caídos de esa cuenta, cada segundo. Empieza desactivado y se guarda por cuenta.
