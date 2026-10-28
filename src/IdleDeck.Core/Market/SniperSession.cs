@@ -29,7 +29,7 @@ public sealed class SniperSession
     private readonly string _owner;
     private readonly Func<TimeSpan, CancellationToken, Task> _delay;
     private readonly ConcurrentDictionary<long, BuyDecision> _pending = [];
-    private readonly ConcurrentDictionary<long, (SniperRule Rule, MarketOffer Offer)> _unconfirmed = [];
+    private readonly ConcurrentDictionary<long, (SniperRule Rule, MarketOffer Offer, int Qty)> _unconfirmed = [];
     private readonly object _gate = new();
     private readonly List<(Func<MarketMessage, bool> Match, TaskCompletionSource<MarketMessage> Source)> _waiters = [];
     private int _failures;
@@ -189,7 +189,7 @@ public sealed class SniperSession
             {
                 if (_pending.TryAdd(decision.Offer.Id, decision))
                 {
-                    _sink.Feed(FeedKind.Offer, Loc.T("{0} em retenção, compra às {1:HH:mm:ss}.", Describe(decision.Offer), at.ToLocalTime()));
+                    _sink.Feed(FeedKind.Offer, Loc.T("{0} em retenção, compra às {1:HH:mm:ss}.", Describe(decision.Offer, decision.Qty), at.ToLocalTime()));
                     _ = FireWhenReadyAsync(decision, at, ct);
                 }
                 continue;
@@ -233,24 +233,25 @@ public sealed class SniperSession
         }
     }
 
-    /// <summary>Compra 1 unidade e espera o jogo dizer se levou. False se o jogo não confirmou nada (conta como falha).</summary>
+    /// <summary>Compra as unidades decididas e espera o jogo dizer se levou. False se o jogo não confirmou nada (conta como falha).</summary>
     private async Task<bool> BuyAsync(SniperAccountConfig config, BuyDecision decision, CancellationToken ct)
     {
         var offer = decision.Offer;
         var rule = decision.Rule;
-        _sink.Feed(FeedKind.Offer, Loc.T("{0} — comprando (regra {1}).", Describe(offer), RuleName(rule)));
+        var qty = Math.Max(1, decision.Qty);
+        _sink.Feed(FeedKind.Offer, Loc.T("{0} — comprando (regra {1}).", Describe(offer, qty), RuleName(rule)));
         _ledger.Started(offer.Id, _clock());
 
         // Cancelar no meio de uma compra perderia a resposta: o pedido já saiu, então espera o fim (o tempo é limitado).
-        var result = await RequestAsync<PurchaseMessage>(MarketProtocol.Buy(offer),
-            m => ConfirmsPurchase(m, offer), CancellationToken.None, _timeouts.Purchase);
+        var result = await RequestAsync<PurchaseMessage>(MarketProtocol.Buy(offer, qty),
+            m => ConfirmsPurchase(m, offer, qty), CancellationToken.None, _timeouts.Purchase);
 
         if (result is null)
         {
             // pode ter dado certo e a resposta só estar atrasada: não repete por um bom tempo e ainda conta se ela chegar
             _ledger.Unknown(offer.Id, _clock());
-            _unconfirmed[offer.Id] = (rule, offer);
-            _sink.Feed(FeedKind.Lost, Loc.T("{0}: o jogo não confirmou a compra.", Describe(offer)));
+            _unconfirmed[offer.Id] = (rule, offer, qty);
+            _sink.Feed(FeedKind.Lost, Loc.T("{0}: o jogo não confirmou a compra.", Describe(offer, qty)));
             return Fail(Loc.T("O jogo não confirmou a compra."));
         }
 
@@ -258,30 +259,42 @@ public sealed class SniperSession
         if (!result.Ok)
         {
             _ledger.Finished(offer.Id, bought: false, _clock());
-            _sink.Feed(FeedKind.Lost, Loc.T("{0}: não levou (outro jogador, ou a oferta mudou).", Describe(offer)));
+            _sink.Feed(FeedKind.Lost, Loc.T("{0}: não levou (outro jogador, ou a oferta mudou).", Describe(offer, qty)));
             return true;
         }
 
-        Settle(rule, offer);
+        Settle(rule, offer, Delivered(result, offer, qty));
         return true;
     }
 
     /// <summary>
     /// A resposta é desta compra? Com sorteio ela traz o id da oferta; na compra direta o aviso não traz id, e então só vale
     /// se o valor e a moeda baterem com o pedido que acabou de sair (um pedido em voo por vez, por conta).
+    /// O jogo pode entregar menos unidades do que o pedido (outro jogador levou parte): vale um total de 1 até
+    /// <paramref name="qty"/> vezes o preço.
     /// </summary>
-    private static bool ConfirmsPurchase(PurchaseMessage m, MarketOffer offer) =>
+    private static bool ConfirmsPurchase(PurchaseMessage m, MarketOffer offer, int qty) =>
         (m.Id == offer.Id && m.Phase is PurchasePhase.End or PurchasePhase.Bought)
-        || (m.Id == 0 && m.Phase == PurchasePhase.Bought && m.Total == offer.Price && m.Currency == offer.Currency);
+        || (m.Id == 0 && m.Phase == PurchasePhase.Bought && m.Currency == offer.Currency && m.Total is { } total
+            && (offer.Price <= 0 ? total == 0 : total % offer.Price == 0 && total / offer.Price >= 1 && total / offer.Price <= qty));
+
+    /// <summary>Quantas unidades vieram: o que o jogo disser (qtd, ou total ÷ preço); sem isso, o que foi pedido.</summary>
+    private static int Delivered(PurchaseMessage m, MarketOffer offer, int asked)
+    {
+        long? told = m.Qty ?? (m.Total is { } total && offer.Price > 0 && total % offer.Price == 0 ? total / offer.Price : (long?)null);
+        return told is { } n ? (int)Math.Clamp(n, 1, asked) : asked;
+    }
 
     /// <summary>A compra deu certo: registra, desconta do saldo local, conta na regra e avisa.</summary>
-    private void Settle(SniperRule rule, MarketOffer offer)
+    private void Settle(SniperRule rule, MarketOffer offer, int qty)
     {
-        _ledger.Finished(offer.Id, bought: true, _clock());
-        rule.Bought++;
-        _tracker.Deduct(offer.Currency, offer.Price);
-        _sink.Feed(FeedKind.Bought, Loc.T("Comprou {0}.", Describe(offer)));
-        _sink.Bought(rule, offer, offer.Price);
+        // se sobrou parte do anúncio (limite da regra, saldo, ou o jogo entregou menos), a sobra pode ser comprada depois
+        _ledger.Finished(offer.Id, bought: qty >= offer.Qty, _clock());
+        rule.Bought += qty;
+        var total = offer.Price * qty;
+        _tracker.Deduct(offer.Currency, total);
+        _sink.Feed(FeedKind.Bought, Loc.T("Comprou {0}.", Describe(offer, qty)));
+        _sink.Bought(rule, offer, qty, total);
         _sink.ConfigChanged();
     }
 
@@ -332,11 +345,11 @@ public sealed class SniperSession
 
         if (message is PurchaseMessage { Phase: PurchasePhase.End or PurchasePhase.Bought } late && _unconfirmed.TryRemove(late.Id, out var pending))
         {
-            if (late.Ok) Settle(pending.Rule, pending.Offer);
+            if (late.Ok) Settle(pending.Rule, pending.Offer, Delivered(late, pending.Offer, pending.Qty));
             else
             {
                 _ledger.Finished(pending.Offer.Id, bought: false, _clock());
-                _sink.Feed(FeedKind.Lost, Loc.T("{0}: não levou (resposta tardia do jogo).", Describe(pending.Offer)));
+                _sink.Feed(FeedKind.Lost, Loc.T("{0}: não levou (resposta tardia do jogo).", Describe(pending.Offer, pending.Qty)));
             }
             return;
         }
@@ -346,9 +359,14 @@ public sealed class SniperSession
         foreach (var hit in hits) hit.TrySetResult(message);
     }
 
-    private static string Describe(MarketOffer o) =>
-        Loc.T("{0} por {1} {2}", string.IsNullOrEmpty(o.Name) ? Loc.T("oferta {0}", o.Id) : o.Name,
-            o.Price.ToString("N0", Loc.Culture), o.Currency == Currency.Gold ? Loc.T("coins") : Loc.T("gemas"));
+    private static string Describe(MarketOffer o, int qty = 1)
+    {
+        var name = string.IsNullOrEmpty(o.Name) ? Loc.T("oferta {0}", o.Id) : o.Name;
+        var currency = o.Currency == Currency.Gold ? Loc.T("coins") : Loc.T("gemas");
+        return qty > 1
+            ? Loc.T("{0}× {1} por {2} {3} cada", qty, name, o.Price.ToString("N0", Loc.Culture), currency)
+            : Loc.T("{0} por {1} {2}", name, o.Price.ToString("N0", Loc.Culture), currency);
+    }
 
     private static string RuleName(SniperRule r) => string.IsNullOrWhiteSpace(r.Label) ? r.Kind.ToString() : r.Label;
 }

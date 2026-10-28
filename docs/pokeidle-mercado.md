@@ -19,7 +19,7 @@ mesma conexão. Token, cookie e o `hello` nunca saem da página.
 | Ofertas de um item | `{"t":"market.item","itemId":70060,"moeda":"gold"\|"orb"}` | `{"t":"market","aba":"item","itemId","moeda","linhas":[oferta…]}` |
 | Resumo de Pokémon por espécie | `{"t":"market.especies","tipo":"pokemon","moeda":"","ordem":"recentes\|baratos","soShiny":false,"soP5":false,…,"pagina":0}` | `{"t":"market","aba":"especies","total","porPagina":24,"pagina","linhas":[{"speciesId","nome","anuncios","shinys","minGold","minOrb","temP5",…}]}` |
 | Ofertas de Pokémon | `{"t":"market.listar","tipo":"pokemon",…mesmos filtros…,"pagina":0,"especieId":6}` (o `especieId` pode ser omitido: o jogo lista o mercado todo, já com os filtros) | `{"t":"market","aba":"vitrine","total","linhas":[oferta…]}` |
-| Comprar | `{"t":"market.comprar","id":<oferta>,"qtd":1,"preco":<preço por unidade>,"moeda":"gold"\|"orb","sorteioUi":1}` | veja "Resposta da compra" |
+| Comprar | `{"t":"market.comprar","id":<oferta>,"qtd":<unidades>,"preco":<preço por unidade>,"moeda":"gold"\|"orb","sorteioUi":1}` (o sniper pede o anúncio inteiro, até o limite da regra e o saldo; `qtd` > 1 ainda não medido) | veja "Resposta da compra" |
 
 **Oferta:** `id`, `vendedor`, `tipo` (`item`/`pokemon`), `itemId`, `pokemonId`, `qtd`, `preco` (**por unidade**), `moeda` (`gold` = coins,
 `orb` = gemas), `estado:"aberto"`, `criadoEm`, `compravelEm` (fim da retenção de 2 min), `ficha`. Em Pokémon a `ficha` traz `nota`, `level`,
@@ -33,7 +33,9 @@ Chega em eventos dentro de um quadro `{"t":"batalha","ev":[…]}`:
 
 - **Com sorteio** (anúncio recém-liberado: pedidos nos primeiros 3 s depois de `compravelEm` entram num sorteio, com chance igual):
   `{"k":"mktSorteio","fase":"entrou","id":…,"liberouEm","fechaEm","sorteioAte"}` → `fase:"lista"` → `fase:"fim","ok":true|false` e
-  `{"k":"marketComprado","id":…,"total","moeda","sorteio":true}`.
+  `{"k":"marketComprado","id":…,"total","moeda","sorteio":true}`. O `fim` traz `qtd` e `descricao` ("1× Bronze Boss Token"); o
+  `marketComprado` traz `descricao` e `total` (preço × unidades). O sniper conta as unidades por `qtd`, pelo "N×" da descrição ou
+  por `total` ÷ preço.
 - **Direta** (anúncio já liberado): só `{"k":"marketComprado","descricao","total","moeda",…}`, **sem `id` da oferta**. Por isso o
   sniper confere o valor e a moeda contra o pedido que acabou de sair.
 - O formato exato de `fim` quando se perde o sorteio (`perdeu`) ou o pedido é recusado (`msg`) segue o módulo do próprio cliente do jogo

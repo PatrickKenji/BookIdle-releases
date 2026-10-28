@@ -45,7 +45,8 @@ public sealed record CatalogMessage(IReadOnlyList<CatalogItem> Items) : MarketMe
 /// <summary>Ofertas de Pokémon (aba "vitrine").</summary>
 public sealed record ListingMessage(IReadOnlyList<MarketOffer> Offers) : MarketMessage;
 
-public sealed record PurchaseMessage(long Id, PurchasePhase Phase, bool Ok, long? Total, Currency? Currency) : MarketMessage;
+/// <summary>Resposta de uma compra. <paramref name="Qty"/> = unidades que o jogo diz ter entregado (null se não disse).</summary>
+public sealed record PurchaseMessage(long Id, PurchasePhase Phase, bool Ok, long? Total, Currency? Currency, int? Qty = null) : MarketMessage;
 
 public sealed record BalanceMessage(long? Gold, long? Orb, long? ServerNowMs) : MarketMessage;
 

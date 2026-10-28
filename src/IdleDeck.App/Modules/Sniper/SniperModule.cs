@@ -204,11 +204,12 @@ public sealed class SniperModule : IModuleView
     {
         public void Feed(FeedKind kind, string text) => module.AddFeed(run, kind, text);
 
-        public void Bought(SniperRule rule, MarketOffer offer, long total)
+        public void Bought(SniperRule rule, MarketOffer offer, int qty, long total)
         {
             run.LastBought = DateTime.Now;
             module._totalBought++;
-            module._host.Notificar($"Sniper — {module.AccountName(id)}", Loc.T("Comprou {0} por {1} {2}.", offer.Name, total.ToString("N0", Loc.Culture), offer.Currency == Currency.Gold ? Loc.T("coins") : Loc.T("gemas")));
+            var name = qty > 1 ? $"{qty}× {offer.Name}" : offer.Name;
+            module._host.Notificar($"Sniper — {module.AccountName(id)}", Loc.T("Comprou {0} por {1} {2}.", name, total.ToString("N0", Loc.Culture), offer.Currency == Currency.Gold ? Loc.T("coins") : Loc.T("gemas")));
             module.SummaryChanged?.Invoke(module, EventArgs.Empty);
         }
 

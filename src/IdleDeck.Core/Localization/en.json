@@ -256,6 +256,7 @@
   "{0} Sniper desligado nesta conta depois de {1} falhas seguidas.": "{0} Sniper turned off on this account after {1} failures in a row.",
   "{0}: não levou (resposta tardia do jogo).": "{0}: missed (late reply from the game).",
   "{0} por {1} {2}": "{0} for {1} {2}",
+  "{0}× {1} por {2} {3} cada": "{0}× {1} for {2} {3} each",
   "oferta {0}": "offer {0}",
   "Não foi possível ler o cofre.": "Could not read the vault.",
   "Cofre vazio.": "Empty vault.",

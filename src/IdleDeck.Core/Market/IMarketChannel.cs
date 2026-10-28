@@ -20,8 +20,8 @@ public interface ISniperSink
 {
     void Feed(FeedKind kind, string text);
 
-    /// <summary>Comprou <paramref name="offer"/> pela regra, pagando <paramref name="total"/> na moeda da oferta.</summary>
-    void Bought(SniperRule rule, MarketOffer offer, long total);
+    /// <summary>Comprou <paramref name="qty"/> unidades de <paramref name="offer"/> pela regra, pagando <paramref name="total"/> na moeda da oferta.</summary>
+    void Bought(SniperRule rule, MarketOffer offer, int qty, long total);
 
     /// <summary>A sessão desligou a conta sozinha (falhas seguidas).</summary>
     void Disabled(string reason);

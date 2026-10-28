@@ -20,13 +20,13 @@ public static class MarketProtocol
     /// <summary>Ofertas de Pokémon. Sem espécie (null) traz o mercado todo, já com os filtros do jogo (shiny, P5, nota).</summary>
     public static string Listing(PokemonFilter filter, int? speciesId) => Request("market.listar", filter, speciesId, 0);
 
-    /// <summary>Compra de 1 unidade, com o preço e a moeda que a oferta mostra (nunca um preço do app).</summary>
-    public static string Buy(MarketOffer offer) =>
+    /// <summary>Compra de <paramref name="qty"/> unidades, com o preço (por unidade) e a moeda que a oferta mostra (nunca um preço do app).</summary>
+    public static string Buy(MarketOffer offer, int qty = 1) =>
         new JsonObject
         {
             ["t"] = "market.comprar",
             ["id"] = offer.Id,
-            ["qtd"] = 1,
+            ["qtd"] = qty,
             ["preco"] = offer.Price,
             ["moeda"] = CurrencyWire.ToWire(offer.Currency),
             ["sorteioUi"] = 1,
@@ -176,18 +176,26 @@ public static class MarketProtocol
                     {
                         case "entrou": list.Add(new PurchaseMessage(id, PurchasePhase.Entered, false, null, null)); break;
                         case "lista": list.Add(new PurchaseMessage(id, PurchasePhase.List, false, null, null)); break;
-                        case "fim": list.Add(new PurchaseMessage(id, PurchasePhase.End, ok, null, null)); break;
+                        case "fim": list.Add(new PurchaseMessage(id, PurchasePhase.End, ok, null, null, Int(e, "qtd"))); break;
                     }
                     break;
                 case "marketComprado":
                     // Na compra com sorteio o aviso traz o id da oferta; na compra DIRETA (anúncio já liberado) não traz:
                     // id 0 = "uma compra minha, sem dizer qual" (quem espera confere o valor e a moeda).
                     Currency? currency = CurrencyWire.TryParse(Str(e, "moeda"), out var c) ? c : null;
-                    list.Add(new PurchaseMessage(Long(e, "id") ?? 0, PurchasePhase.Bought, true, Long(e, "total"), currency));
+                    list.Add(new PurchaseMessage(Long(e, "id") ?? 0, PurchasePhase.Bought, true, Long(e, "total"), currency,
+                        Int(e, "qtd") ?? QtyFromDescription(Str(e, "descricao"))));
                     break;
             }
         }
         return list;
+    }
+
+    /// <summary>"20× Bronze Boss Token" → 20 (o aviso de compra conta as unidades só no texto).</summary>
+    private static int? QtyFromDescription(string? text)
+    {
+        var mark = text?.IndexOf('×') ?? -1;
+        return mark > 0 && int.TryParse(text![..mark].Trim(), NumberStyles.None, CultureInfo.InvariantCulture, out var qty) && qty > 0 ? qty : null;
     }
 
     private static IReadOnlyList<MarketMessage> ParseWelcome(JsonElement root)

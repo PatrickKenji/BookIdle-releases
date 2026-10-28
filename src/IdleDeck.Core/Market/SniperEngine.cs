@@ -2,8 +2,11 @@ namespace IdleDeck.Core.Market;
 
 public sealed record Balance(long Gold, long Orb);
 
-/// <summary>Comprar <see cref="Offer"/> (de uma regra). <see cref="WaitUntil"/> null = a retenção já acabou: comprar agora.</summary>
-public sealed record BuyDecision(MarketOffer Offer, SniperRule Rule, DateTimeOffset? WaitUntil);
+/// <summary>
+/// Comprar <see cref="Qty"/> unidades de <see cref="Offer"/> (de uma regra). <see cref="WaitUntil"/> null = a retenção já acabou:
+/// comprar agora.
+/// </summary>
+public sealed record BuyDecision(MarketOffer Offer, SniperRule Rule, DateTimeOffset? WaitUntil, int Qty = 1);
 
 /// <summary>Decide, sem tocar em rede nem em tela, quais das ofertas vistas uma regra manda comprar.</summary>
 public static class SniperEngine
@@ -16,27 +19,30 @@ public static class SniperEngine
 
         var gold = balance.Gold;
         var orb = balance.Orb;
-        var remaining = SniperRules.Remaining(rule);
+        var remaining = SniperRules.Remaining(rule); // em unidades, não em ofertas
         var decisions = new List<BuyDecision>();
 
         foreach (var offer in offers.OrderBy(o => o.Price))
         {
-            if (decisions.Count >= remaining) break;
+            if (remaining <= 0) break;
             if (!Matches(rule, offer) || !ledger.CanTry(offer.Id, now)) continue;
 
-            if (offer.Currency == Currency.Gold)
-            {
-                if (rule.MaxGold <= 0 || offer.Price > rule.MaxGold || gold - offer.Price < config.ReserveGold) continue;
-                gold -= offer.Price;
-            }
-            else
-            {
-                if (rule.MaxOrb <= 0 || offer.Price > rule.MaxOrb || orb - offer.Price < config.ReserveOrb) continue;
-                orb -= offer.Price;
-            }
+            var isGold = offer.Currency == Currency.Gold;
+            var ceiling = isGold ? rule.MaxGold : rule.MaxOrb;
+            if (ceiling <= 0 || offer.Price > ceiling) continue;
+
+            // leva o anúncio inteiro, se o limite da regra e o saldo acima da reserva deixarem; senão o quanto der
+            var budget = isGold ? gold - config.ReserveGold : orb - config.ReserveOrb;
+            var affordable = offer.Price <= 0 ? long.MaxValue : budget / offer.Price;
+            var qty = Math.Min(Math.Max(1, offer.Qty), Math.Min(remaining, affordable));
+            if (qty < 1) continue;
+
+            if (isGold) gold -= offer.Price * qty;
+            else orb -= offer.Price * qty;
+            remaining -= qty;
 
             var releaseAt = DateTimeOffset.FromUnixTimeMilliseconds(offer.BuyableAtMs - serverOffsetMs);
-            decisions.Add(new BuyDecision(offer, rule, releaseAt > now ? releaseAt : null));
+            decisions.Add(new BuyDecision(offer, rule, releaseAt > now ? releaseAt : null, (int)qty));
         }
         return decisions;
     }
