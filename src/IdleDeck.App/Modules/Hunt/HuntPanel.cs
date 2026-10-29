@@ -47,6 +47,7 @@ public sealed class HuntPanel : DockPanel
     private readonly Border _cabecalho;
     private int? _selecionada;
     private bool _porOuro;
+    private bool _outland;
     private bool _bloqueadas;
 
     public HuntPanel(HuntModule modulo, IModuleHostServices host)
@@ -99,15 +100,17 @@ public sealed class HuntPanel : DockPanel
         }
 
         MostrarRanking(true);
-        _barra.Children.Add(Alternar("XP/h", !_porOuro, () => { _porOuro = false; Atualizar(); }));
-        _barra.Children.Add(Alternar(Loc.T("Gold/h líquido"), _porOuro, () => { _porOuro = true; Atualizar(); }));
+        _barra.Children.Add(Alternar("XP/h", !_outland && !_porOuro, () => { _outland = false; _porOuro = false; Atualizar(); }));
+        _barra.Children.Add(Alternar(Loc.T("Gold/h líquido"), !_outland && _porOuro, () => { _outland = false; _porOuro = true; Atualizar(); }));
+        _barra.Children.Add(Alternar(Loc.T("Outland (tokens)"), _outland, () => { _outland = true; Atualizar(); }));
+        _cabecalho.Child = Grade(CelulasDoCabecalho(_outland));
         var bloq = new CheckBox { Content = Loc.T("mostrar bloqueadas"), IsChecked = _bloqueadas, Margin = new Thickness(12, 0, 0, 0), VerticalAlignment = VerticalAlignment.Center };
         bloq.Click += (_, _) => { _bloqueadas = bloq.IsChecked == true; Atualizar(); };
         _barra.Children.Add(bloq);
         if (r.Pokemon is { Aoe: true } pk) AdicionarAjusteAoe(sel, pk.AoeAlvos);
-        _barra.Children.Add(Texto(Resumo(r), muted: true, margem: new Thickness(14, 0, 0, 0)));
+        _barra.Children.Add(Texto(_outland ? ResumoOutland(r) : Resumo(r), muted: true, margem: new Thickness(14, 0, 0, 0)));
 
-        var lista = (_porOuro ? r.PorOuro : r.PorXp).Where(l => _bloqueadas || l.Liberada).ToList();
+        var lista = (_outland ? r.PorOutland ?? [] : _porOuro ? r.PorOuro : r.PorXp).Where(l => _bloqueadas || l.Liberada).ToList();
         if (lista.Count == 0) _linhas.Children.Add(Texto(Loc.T("Nenhuma hunt liberada para o nível deste treinador."), muted: true));
         for (var i = 0; i < lista.Count; i++) _linhas.Children.Add(LinhaDaHunt(lista[i], i));
     }
@@ -126,7 +129,18 @@ public sealed class HuntPanel : DockPanel
         var partes = new List<string> { Loc.T("bônus XP ×{0}", r.BonusXpPokemon.ToString("0.##", Br)) };
         if (r.BikeRaridade is { } bike) partes.Add(Loc.T("bike {0}", bike));
         partes.Add(r.Pocao is { } p ? Loc.T("poção: {0} (limiar {1:P0})", p, r.Limiar) : Loc.T("sem poção automática"));
+        if (r.BuffGinasioPct > 0) partes.Add(Loc.T("pódio de ginásio +{0}%", r.BuffGinasioPct));
         if (r.DiaSazonal is { Length: > 0 } dia) partes.Add(Loc.T("dia sazonal: {0}", HuntReport.TipoEmPortugues(dia)) + (r.HeroiDoDia ? Loc.T(" (seu pokémon ×2)") : ""));
+        return string.Join(" · ", partes);
+    }
+
+    /// <summary>Na Outland toda hunt é nível 150: o que separa uma da outra é a velocidade de limpar. A chance do token vem do degrau em vigor.</summary>
+    private static string ResumoOutland(HuntReport r)
+    {
+        if (r.Outland is not { } o) return Loc.T("Outland: o jogo não mandou o degrau.");
+        var melhor = r.PorOutland?.FirstOrDefault(l => l.Liberada && !l.Inviavel);
+        var partes = new List<string> { Loc.T("{0} (×{1}): token {2:0.###}% por abate", o.Rotulo, o.Mult.ToString("0.##", Br), o.ChanceBoss * 100) };
+        if (melhor is { TokensH: > 0 }) partes.Add(Loc.T("melhor: 1 token a cada {0:0.#} h", 1 / melhor.TokensH));
         return string.Join(" · ", partes);
     }
 
@@ -155,6 +169,9 @@ public sealed class HuntPanel : DockPanel
             var ouro = r.PorOuro.FirstOrDefault(l => l.Liberada && !l.Inviavel);
             corpo.Children.Add(Texto(xp is null ? "XP: —" : Loc.T("★ XP: {0} · {1}/h", xp.Nome, Compacto(xp.XpPokemonH)), cor: "Yellow"));
             corpo.Children.Add(Texto(ouro is null ? "Gold: —" : Loc.T("💰 Gold: {0} · {1}/h", ouro.Nome, Compacto(ouro.LiquidoH)), cor: "Green"));
+            var outland = r.PorOutland?.FirstOrDefault(l => l.Liberada && !l.Inviavel);
+            if (outland is { TokensH: > 0 })
+                corpo.Children.Add(Texto(Loc.T("🪙 Outland: {0} · {1:0.##} tokens/h", outland.Nome, outland.TokensH), cor: "Orange"));
             corpo.Children.Add(Texto(u.Aviso ?? Loc.T("atualizado {0}", Idade(u.Recebido)), muted: true));
         }
         else if (u is { Mensagem: HuntStatus s })
@@ -183,18 +200,20 @@ public sealed class HuntPanel : DockPanel
     /// <summary>Barra de títulos: mesma grade e mesmas larguras das linhas, descontando a barra de rolagem.</summary>
     private Border Cabecalho()
     {
-        var celulas = Colunas
-            .Select(c => Texto(c.Titulo, muted: true, bold: true, direita: c.Tipo == TipoColuna.Numero))
-            .ToArray();
         return new Border
         {
             Background = Cor("Pill"),
             CornerRadius = new CornerRadius(6),
             Padding = new Thickness(6, 5, 6, 5),
             Margin = new Thickness(0, 0, LarguraBarra, 6),
-            Child = Grade(celulas),
+            Child = Grade(CelulasDoCabecalho(false)),
         };
     }
+
+    /// <summary>Na lista da Outland a coluna Nv (sempre 150) dá lugar ao token/h.</summary>
+    private UIElement[] CelulasDoCabecalho(bool outland) => Colunas
+        .Select((c, i) => Texto(outland && i == 1 ? Loc.T("Token/h") : c.Titulo, muted: true, bold: true, direita: c.Tipo == TipoColuna.Numero))
+        .ToArray<UIElement>();
 
     /// <summary>Uma hunt do ranking. Linhas alternadas (zebra) para o olho não pular de linha.</summary>
     private Border LinhaDaHunt(HuntLine l, int indice)
@@ -209,7 +228,9 @@ public sealed class HuntPanel : DockPanel
         var celulas = new UIElement[]
         {
             Texto(nome, bold: l.Atual),
-            Texto(l.Nivel.ToString("N0", Br), muted: true, direita: true),
+            _outland
+                ? Texto(l.Inviavel ? "—" : l.TokensH.ToString("0.##", Br), cor: "Orange", direita: true)
+                : Texto(l.Nivel.ToString("N0", Br), muted: true, direita: true),
             Texto(l.Inviavel ? "—" : Compacto(l.XpPokemonH), cor: _porOuro ? null : "Yellow", direita: true),
             Texto(l.Inviavel ? "—" : Compacto(l.LiquidoH), cor: _porOuro ? "Green" : null, direita: true),
             Texto(l.Inviavel ? "—" : l.KillsH.ToString("N0", Br), direita: true),
@@ -230,6 +251,9 @@ public sealed class HuntPanel : DockPanel
             Opacity = l.Liberada && !l.Inviavel ? 1 : 0.55,
         };
         borda.ToolTip = l.Inviavel ? Loc.T("O pokémon não consegue derrubar estes selvagens.")
+            : l.Outland ? Loc.T("Tokens {0:0.##}/h (1 a cada {1:0.#} h) · fragmentos (chave, shiny, bicicleta) {2:0.###}/h\nGold bruto {3}/h − poções {4} − revives {5} − bolas {6}\nmaior golpe do selvagem {7:P0} do seu HP · mortes/h {8:0.##}",
+                l.TokensH, l.TokensH > 0 ? 1 / l.TokensH : 0, l.FragmentosH,
+                Compacto(l.OuroH), Compacto(l.CustoPocoesH), Compacto(l.CustoRevivesH), Compacto(l.CustoBolasH), l.MaiorGolpePct, l.MortesH)
             : Loc.T("Gold bruto {0}/h − poções {1} − revives {2} − bolas {3}\nXP do treinador {4}/h · maior golpe do selvagem {5:P0} do seu HP · mortes/h {6:0.##}",
                 Compacto(l.OuroH), Compacto(l.CustoPocoesH), Compacto(l.CustoRevivesH), Compacto(l.CustoBolasH),
                 Compacto(l.XpTreinadorH), l.MaiorGolpePct, l.MortesH);

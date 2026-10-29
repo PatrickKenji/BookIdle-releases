@@ -28,7 +28,30 @@
     maxAtaquesPorAbate: 1000,
     aoeAlvosPadrao: 2, // o jogo não diz quantos selvagens ficam no 11×11; ajustável por conta
     limiarPadrao: 0.3,
+    chanceBossPadrao: 0.0005, // Bronze Boss Token por abate na Outland 1 (welcome.chanceBossToken)
+    chanceFragmentoPadrao: 0.000005, // Chave, Shiny Stone e Bicicleta (cada um), na Outland 1
   };
+
+  /** A escada das Outlands do jogo (shared/outland-tiers.mjs): rede de baixo para o welcome que não trouxer a lista. */
+  const TIERS_OUTLAND = [
+    { tier: 1, rotulo: 'Outland 1', nivel: 150, mult: 1 }, { tier: 2, rotulo: 'Outland 2', nivel: 1000, mult: 1.25 },
+    { tier: 3, rotulo: 'Outland 3', nivel: 2000, mult: 1.5 }, { tier: 4, rotulo: 'Outland 4', nivel: 4000, mult: 2 },
+    { tier: 5, rotulo: 'Outland 5', nivel: 8000, mult: 3 }, { tier: 6, rotulo: 'Outland 6', nivel: 16000, mult: 4 },
+    { tier: 7, rotulo: 'Outland 7', nivel: 24000, mult: 6 }, { tier: 8, rotulo: 'Outland 8', nivel: 36000, mult: 8 },
+  ];
+
+  /**
+   * O degrau de Outland que vale AGORA: o escolhido pela conta, ou o melhor que o nível alcança
+   * (o servidor refaz essa poda a cada abate, `tierOutlandValido`). Quem manda nos números é o welcome.
+   */
+  function degrauOutland(eu, tiers) {
+    const lista = tiers?.length ? tiers : TIERS_OUTLAND;
+    const nivel = Number(eu?.level) || 0;
+    const escolhido = lista.find((x) => x.tier === Number(eu?.outlandTier)) ?? lista[0];
+    if (nivel >= escolhido.nivel) return escolhido;
+    for (let i = lista.length - 1; i >= 0; i--) if (nivel >= lista[i].nivel) return lista[i];
+    return lista[0];
+  }
 
   const tiposDe = (esp) => [esp.type1, esp.type2].filter(Boolean);
   const ivSpd = (iv) => Math.min(32, Math.max(1, Math.round(Number(iv) || 1)));
@@ -234,7 +257,7 @@
       };
       return {
         esp, peso: pontos / totalPontos, tipos,
-        ataque: opcoesContra(heroi, { tipos, def: st.def, spDef: st.spDef }, ef, 1, sazonal),
+        ataque: opcoesContra(heroi, { tipos, def: st.def, spDef: st.spDef }, ef, ctx.multGinasio, sazonal),
         defesa: opcoesContra(selvagem, { tipos: heroi.tipos, def: heroi.def, spDef: heroi.spDef }, ef, multDano, sazonal),
         lutaS: 0, abates: 0, danoPorGolpe: new Map(),
       };
@@ -377,8 +400,15 @@
     const aoe = temAoe(pk);
     const aoeAlvos = Math.max(1, Number(ctx.aoeAlvos ?? (aoe ? REGRAS.aoeAlvosPadrao : 1)) || 1);
     const diaSazonal = ctx.diaSazonal || null;
+    // Pódio de ginásio (jogo v1.377): +25% / +10% / +5% de dano na hunt para o pokémon de um tipo que o dono lidera, sem empilhar.
+    const podio = ctx.eu?.ginasiosPodio ?? ctx.eu?.ginasios;
+    const multGinasio = Number(ctx.jogo.multBuffGinasio?.(heroi.tipos, podio)) || 1;
+    const degrau = degrauOutland(ctx.eu, ctx.consts.outlandTiers);
+    const chanceBoss = (Number(ctx.consts.chanceBossToken) || REGRAS.chanceBossPadrao) * degrau.mult;
+    const chanceFragmentos = (ctx.consts.chanceFragmentos ?? [REGRAS.chanceFragmentoPadrao, REGRAS.chanceFragmentoPadrao, REGRAS.chanceFragmentoPadrao])
+      .reduce((a, c) => a + (Number(c) || 0), 0) * degrau.mult;
     const interno = {
-      ...ctx, ef, bike, bonus, aoeAlvos, diaSazonal,
+      ...ctx, ef, bike, bonus, aoeAlvos, diaSazonal, multGinasio,
       bonusLoot: Number(ctx.jogo.bonusLootPct?.(ctx.eu ?? {}, agora, ctx.consts.tiposBoost ?? [])) || 0,
       consumo: consumiveis(ctx.eu, ctx),
     };
@@ -390,14 +420,25 @@
       if (!r) continue;
       linhas.push({
         slug: h.slug, nome: h.nome, nivel: h.nivel ?? 1, regiao: h.regiao ?? h.area ?? null,
+        outland: h.area === 'outland',
         liberada: nivelTreinador >= (h.nivel ?? 1),
         atual: ctx.eu?.huntSlug === h.slug,
         ...(r.inviavel ? vazio : r),
       });
+      const l = linhas[linhas.length - 1];
+      // Na Outland cada abate rola os raros: token do boss e os três fragmentos (todos multiplicados pelo degrau).
+      l.tokensH = l.outland ? l.killsH * chanceBoss : 0;
+      l.fragmentosH = l.outland ? l.killsH * chanceFragmentos : 0;
     }
-    const ordenar = (chave) => [...linhas].sort((a, b) => (a.inviavel - b.inviavel) || (b[chave] - a[chave]));
+    const ordenar = (chave, de = linhas) => [...de].sort((a, b) => (a.inviavel - b.inviavel) || (b[chave] - a[chave]));
+    // Toda hunt da Outland é nível 150: XP e ouro por abate são iguais, então o que separa uma da outra é a
+    // velocidade de limpar (e o risco). Token, fragmento, XP e ouro por hora andam juntos com os abates/h.
+    const soOutland = linhas.filter((l) => l.outland);
     return {
       heroi, bonus, bike, aoe, aoeAlvos, limiar: interno.consumo.limiar,
+      multGinasio, buffGinasioPct: Math.round((multGinasio - 1) * 100),
+      outland: { tier: degrau.tier, rotulo: degrau.rotulo, mult: degrau.mult, chanceBoss, chanceFragmentos },
+      porOutland: ordenar('killsH', soOutland),
       diaSazonal, heroiDoDia: !!diaSazonal && heroi.tipos.includes(diaSazonal),
       pocao: interno.consumo.pocao?.name ?? null,
       linhas,
@@ -408,6 +449,6 @@
 
   return {
     REGRAS, amplificar, dano, statsSelvagem, hpSelvagem, comDescontoDoIv, montarHeroi, filaDeAbates,
-    estoque, bonusDeXp, bikeDaConta, analisar,
+    estoque, bonusDeXp, bikeDaConta, degrauOutland, analisar,
   };
 });

@@ -56,6 +56,14 @@ O analisador do jogo (`analisarHunt`) supõe **um golpe por abate**: é o teto t
 - Desmaio sem revive: time volta ao Centro, perde 10% do XP do nível do treinador (0 com Atrasados) e o tempo de voltar.
 - Auto-bola (VIP): uma bola por corpo (1,2 s entre arremessos), primeira da lista com estoque.
 
+## Mudanças do jogo até a 1.380.2 (conferidas em 2026-10-28) e o que o /hunt faz com elas
+
+- **Ouro e XP por abate** (`shared/recompensa-hunt.mjs`): uma curva só, pelo nível do mob; o loot saiu do jogo (15/10) e virou *bônus de loot* no ouro (+15% até o nível 25.000), que o Loot Boost multiplica. O motor já chama as funções do jogo, então acompanha sozinho.
+- **Pódio de ginásio** (v1.377.0, `shared/ginasios.mjs` → `multBuffGinasio(tipos, eu.ginasiosPodio ?? eu.ginasios)`): o pokémon de um tipo cujo ginásio o dono lidera bate **+25%** (2º lugar +10%, 3º +5%) na hunt e no boss, sem empilhar entre os tipos. Entra no dano do herói (`multGinasio`); o relatório diz `buffGinasioPct`.
+- **Hunts em bandos** (v1.377.0): toda hunt, Outland incluída, ganhou o layout em bandos, "mesmo ritmo e mesmo ganho de bicicleta em todo mapa". O ritmo continua o modelo de ondas do Hunt Analyser; o AoE por bando segue sendo o ajuste manual da conta.
+- **Outland** (`shared/outland-tiers.mjs`, `welcome.outlandTiers`): mesmas 47 hunts, **todas nível 150**; o degrau (Outland 1 a 8, `eu.outlandTier`, travado pelo nível 150/1.000/2.000/4.000/8.000/16.000/24.000/36.000) só multiplica os raros: Bronze Boss Token (`welcome.chanceBossToken`, 0,05% na Outland 1), Fragmento de Chave, de Shiny Stone e de Bicicleta (0,0005% cada). Mult: 1 · 1,25 · 1,5 · 2 · 3 · 4 · 6 · 8. Shiny e Fragmento de Ovo Shiny não caem lá.
+- Como o nível é 150 em todas, **XP e ouro por abate são iguais na Outland**: a melhor hunt é a que limpa mais rápido (mais abates/h), e token, fragmento, XP e ouro por hora andam juntos com os abates/h. O /hunt tem a aba **Outland (tokens)** com isso.
+
 ## Por conta, sempre ao vivo
 
 Tudo vem do `eu` de cada conta logada: nível do treinador, pokémon em campo (stats reais, IVs, golpes liberados pelo nível, Z-Move, AoE), bicicleta, boosts, automações, estoque e preços. Nada fixo de uma conta específica — o app pode ser usado por outras pessoas.

@@ -82,7 +82,7 @@
 
   // ---- o jogo: fórmulas e catálogo, sempre da versão no ar -----------------------------------
   /** Módulos que o /hunt usa se existirem: um jogo sem eles continua calculando (sem esse detalhe). */
-  const OPCIONAIS = new Set(['diaSazonal']);
+  const OPCIONAIS = new Set(['diaSazonal', 'ginasios']);
   const MODULOS = {
     analyser: 'hunt-analyser.mjs',
     recompensa: 'shared/recompensa-hunt.mjs',
@@ -100,6 +100,7 @@
     golpesOrre: 'shared/herdar-golpes-orre.mjs',
     megas: 'shared/megas.mjs',
     diaSazonal: 'shared/dia-sazonal.mjs',
+    ginasios: 'shared/ginasios.mjs',
   };
   const json = (caminho) => fetch(`${ORIGEM}/${caminho}`, SEM_CACHE).then((r) => (r.ok ? r.json() : null)).catch(() => null);
 
@@ -184,7 +185,7 @@
     return JSON.stringify([
       pk?.id, pk?.level, pk?.stats, pk?.tmElemental, pk?.tmAoe, eu?.level, eu?.bonusXp, eu?.bicicleta?.equipadaRar,
       a.autoPotion, a.potionIds, a.hpLimiar, a.autoRevive, a.reviveIds, a.autoBallSemParar, a.autoBallAteCapturar, a.ballIds,
-      eu?.huntSlug, aoeAlvos, eu?.diaSazonal?.tipo,
+      eu?.huntSlug, aoeAlvos, eu?.diaSazonal?.tipo, eu?.outlandTier, eu?.ginasiosPodio ?? eu?.ginasios,
     ]);
   }
 
@@ -207,11 +208,18 @@
     custoPocoesH: r0(l.custoH?.pocoes), custoRevivesH: r0(l.custoH?.revives), custoBolasH: r0(l.custoH?.bolas),
     pocoesH: r2(l.pocoesH), mortesH: r2(l.mortesH), risco: l.risco,
     maiorGolpePct: r2(l.maiorGolpePct), danoPorAbatePct: r2(l.danoPorAbatePct), golpe: l.golpePrincipal ?? null,
+    outland: !!l.outland, tokensH: r2(l.tokensH), fragmentosH: r2(l.fragmentosH),
   });
   /** As melhores liberadas + as 5 bloqueadas mais baratas de destravar (para mostrar o que vem). */
   const corte = (lista) => [
     ...lista.filter((l) => l.liberada).slice(0, TOP),
     ...lista.filter((l) => !l.liberada && !l.inviavel).sort((a, b) => a.nivel - b.nivel).slice(0, 5),
+  ].map(resumo);
+
+  /** As liberadas da Outland (todas têm o mesmo nível, então o corte é só por tamanho) + as que o nível ainda não abre. */
+  const corteOutland = (lista) => [
+    ...lista.filter((l) => l.liberada).slice(0, TOP * 2),
+    ...lista.filter((l) => !l.liberada && !l.inviavel).slice(0, 3),
   ].map(resumo);
 
   async function calcular() {
@@ -243,6 +251,7 @@
           MS_ONDA: analyser.MS_ONDA, MAX_MOBS: analyser.MAX_MOBS,
           MS_DESLOC_MS: analyser.MS_DESLOC_MS, CD_MOVIMENTO_MEDIO_MS: analyser.CD_MOVIMENTO_MEDIO_MS,
           multDanoSazonal: diaSazonal?.multDanoSazonal,
+          multBuffGinasio: jogo.mod.ginasios?.multBuffGinasio,
         },
         especies: jogo.especies,
         hunts: welcome.hunts ?? [],
@@ -250,6 +259,8 @@
           tabelaTipos: welcome.tabelaTipos, ampliacaoHunt: welcome.ampliacaoHunt,
           multHpSelvagem: welcome.multHpSelvagem, multDanoSelvagem: welcome.multDanoSelvagem,
           tiposBoost: welcome.tiposBoost, bicicletas: welcome.bicicletas,
+          chanceBossToken: welcome.chanceBossToken, outlandTiers: welcome.outlandTiers,
+          chanceFragmentos: [welcome.casas?.fragmento?.chanceDrop, welcome.shinyStone?.chanceDrop, welcome.bicicletas?.fragmento?.chanceDrop],
         },
         eu,
         itens,
@@ -274,6 +285,9 @@
         diaSazonal: r.diaSazonal, heroiDoDia: r.heroiDoDia,
         porXp: corte(r.porXp),
         porOuro: corte(r.porOuro),
+        buffGinasioPct: r.buffGinasioPct,
+        outland: { tier: r.outland.tier, rotulo: r.outland.rotulo, mult: r2(r.outland.mult), chanceBoss: r.outland.chanceBoss, chanceFragmentos: r.outland.chanceFragmentos },
+        porOutland: corteOutland(r.porOutland),
       });
     } catch (err) {
       diag(`falha no cálculo: ${err.stack ?? err.message}`.slice(0, 600));

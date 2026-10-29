@@ -9,7 +9,11 @@ public record HuntLine(
     string Slug, string Nome, int Nivel, string? Regiao, bool Liberada, bool Atual, bool Inviavel,
     double KillsH, double LutaS, double XpPokemonH, double XpTreinadorH, double OuroH, double LiquidoH,
     double CustoPocoesH, double CustoRevivesH, double CustoBolasH, double PocoesH, double MortesH,
-    HuntRisk Risco, double MaiorGolpePct, double DanoPorAbatePct, string? Golpe);
+    HuntRisk Risco, double MaiorGolpePct, double DanoPorAbatePct, string? Golpe,
+    bool Outland = false, double TokensH = 0, double FragmentosH = 0);
+
+/// <summary>O degrau de Outland em vigor na conta (o jogo poda o escolhido pelo nível) e a chance de token por abate já multiplicada.</summary>
+public record HuntOutland(int Tier, string Rotulo, double Mult, double ChanceBoss);
 
 public record HuntPokemon(string? Nome, int Level, string[] Tipos, double HpMax, string? ZMove, bool Aoe, int AoeAlvos);
 
@@ -54,7 +58,8 @@ public record HuntReport(
     DateTime GeradoEm, string? VersaoJogo, int TreinadorLevel, HuntPokemon? Pokemon,
     double BonusXpPokemon, double BonusXpTreinador, string? BikeRaridade, string? Pocao, double Limiar,
     string? HuntAtual, IReadOnlyList<HuntLine> PorXp, IReadOnlyList<HuntLine> PorOuro,
-    string? DiaSazonal = null, bool HeroiDoDia = false) : HuntMessage
+    string? DiaSazonal = null, bool HeroiDoDia = false,
+    int BuffGinasioPct = 0, HuntOutland? Outland = null, IReadOnlyList<HuntLine>? PorOutland = null) : HuntMessage
 {
     /// <summary>O nome do tipo em português (o jogo manda em inglês: FIRE, WATER…).</summary>
     public static string TipoEmPortugues(string tipo) => tipo switch
@@ -96,7 +101,10 @@ public record HuntReport(
             Num(d, "limiar"),
             Str(d, "huntAtual"),
             porXp, porOuro,
-            Str(d, "diaSazonal"), Bool(d, "heroiDoDia"));
+            Str(d, "diaSazonal"), Bool(d, "heroiDoDia"),
+            (int)Num(d, "buffGinasioPct"),
+            Obj(d, "outland", out var o) ? new HuntOutland((int)Num(o, "tier"), Str(o, "rotulo") ?? "", Num(o, "mult"), Num(o, "chanceBoss")) : null,
+            Lines(d, "porOutland") ?? []);
     }
 
     /// <summary>null quando o campo existe mas não é lista (mensagem inválida); vazio quando falta.</summary>
@@ -110,6 +118,7 @@ public record HuntReport(
             Num(l, "killsH"), Num(l, "lutaS"), Num(l, "xpPokemonH"), Num(l, "xpTreinadorH"), Num(l, "ouroH"), Num(l, "liquidoH"),
             Num(l, "custoPocoesH"), Num(l, "custoRevivesH"), Num(l, "custoBolasH"), Num(l, "pocoesH"), Num(l, "mortesH"),
             Str(l, "risco") switch { "umHit" => HuntRisk.UmHit, "arriscado" => HuntRisk.Arriscado, _ => HuntRisk.Seguro },
-            Num(l, "maiorGolpePct"), Num(l, "danoPorAbatePct"), Str(l, "golpe"))).ToList();
+            Num(l, "maiorGolpePct"), Num(l, "danoPorAbatePct"), Str(l, "golpe"),
+            Bool(l, "outland"), Num(l, "tokensH"), Num(l, "fragmentosH"))).ToList();
     }
 }
