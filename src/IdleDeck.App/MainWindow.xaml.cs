@@ -54,6 +54,7 @@ public partial class MainWindow : Window, IModuleHostServices
     private static readonly string AutoCatchScript = AccountWebWindow.LoadScript("Scripts.auto-catch.js");
     private const string TopIdleStatusPrefix = "topidle:status:";
     private readonly TwitchService _twitch;
+    private readonly Kick.KickService _kick;
     private readonly Dictionary<AccountView, AccountWebWindow> _voteWindows = [];
     private readonly System.Windows.Threading.DispatcherTimer _voteTimer = new() { Interval = TimeSpan.FromMinutes(1) };
     private Dictionary<string, Credential>? _credentials;
@@ -75,8 +76,10 @@ public partial class MainWindow : Window, IModuleHostServices
         InitializeComponent();
         if (App.IsTestCopy) Title = "BookIdle " + Loc.T("(TESTE)");
         _drag = new AccountDragController(AccountsGrid, VisibleViews, DropAccount);
-        _twitch = new TwitchService(Dispatcher, CoreOfAccount);
+        _twitch = new TwitchService(Dispatcher, CoreOfAccount, () => _host);
         _twitch.Changed += () => Dispatcher.BeginInvoke(RefreshTwitchUi);
+        _kick = new Kick.KickService(Dispatcher, CoreOfAccount, () => _host);
+        _kick.Changed += () => Dispatcher.BeginInvoke(RefreshKickUi);
         foreach (var module in _modules.Modules) module.SummaryChanged += (_, _) => RefreshSummaries();
 
         ProfileList.ItemsSource = _cards;
@@ -109,6 +112,7 @@ public partial class MainWindow : Window, IModuleHostServices
             if (StartInTray) HideToTray();
             UnlockVaultAtStartup();
             SyncTwitch();
+            SyncKick();
             await browsers;
             // as células já têm o tamanho final: garante que cada WebView2 esteja do tamanho certo
             foreach (var view in _views) view.RealinharTela();
@@ -281,6 +285,7 @@ public partial class MainWindow : Window, IModuleHostServices
     {
         _keepAlive.Detach(view);
         _twitch.Stop(view.Config.ProfileName);
+        _kick.Stop(view.Config.ProfileName);
         _views.Remove(view);
         CardOf(view.Profile).Accounts.Remove(_items[view]);
         _items.Remove(view);
@@ -596,7 +601,7 @@ public partial class MainWindow : Window, IModuleHostServices
             if (profile.TwitchChannels.Count == 0) continue;
             foreach (var account in profile.Accounts)
                 if (account.TwitchLogin is { Length: > 0 } login)
-                    desired.Add(new TwitchService.Desired(account.ProfileName, login, profile.TwitchChannels));
+                    desired.Add(new TwitchService.Desired(account.ProfileName, login, profile.TwitchChannels, account.TwitchWatchLives));
         }
         _twitch.Sync(desired);
         RefreshTwitchUi();
@@ -629,7 +634,13 @@ public partial class MainWindow : Window, IModuleHostServices
                     item.SetTwitch(TwitchIcon.Gray, Loc.T("Twitch {0}: a conta saiu da Twitch (ou entrou outra). Botão direito → Reconectar Twitch…", login));
                     break;
                 case { Status: TwitchStatus.Connected } s when s.Joined == s.Wanted && s.Wanted > 0:
-                    item.SetTwitch(TwitchIcon.Green, Loc.T("Twitch {0}: ligada em {1} de {2} canais", login, s.Joined, s.Wanted));
+                    item.SetTwitch(TwitchIcon.Green, Loc.T("Twitch {0}: ligada em {1} de {2} canais", login, s.Joined, s.Wanted)
+                        + "\n" + (!view.Config.TwitchWatchLives
+                            ? Loc.T("Lives desligadas: sem pontos do canal, sem gastar RAM. Clique no botão para ligar.")
+                            : s.Watching.Count == 0
+                                ? Loc.T("Nenhuma live da lista ao vivo agora")
+                                : Loc.T("Assistindo (pontos do canal): {0}", string.Join(", ", s.Watching))
+                                  + "\n" + Loc.T("Clique no botão para desligar as lives (economiza RAM).")));
                     break;
                 case var s:
                     item.SetTwitch(TwitchIcon.Yellow, s!.Status == TwitchStatus.Connected
@@ -642,7 +653,10 @@ public partial class MainWindow : Window, IModuleHostServices
 
     private void EditTwitchChannels(ProfileCard card)
     {
-        var window = new TwitchChannelsWindow(this, card.Profile.Name, card.Profile.TwitchChannels);
+        var window = new Lives.LiveChannelsWindow(this, "Twitch", card.Profile.Name, Loc.T("BÔNUS DE LIVE (TWITCH)"),
+            Loc.T("Um canal por linha (pode colar o endereço, ex.: twitch.tv/canal), na ordem de prioridade. Cada conta com a Twitch conectada fica no chat de todos eles e assiste as 2 primeiras lives ao vivo da lista (a Twitch só dá pontos em 2 por vez), escondidas e sem som."),
+            card.Profile.TwitchChannels.Count > 0 ? card.Profile.TwitchChannels : Core.Twitch.TwitchChannels.Partners,
+            Core.Twitch.TwitchChannels.Partners, Core.Twitch.TwitchChannels.Normalize);
         if (window.ShowDialog() != true) return;
         card.Profile.TwitchChannels = window.Channels;
         SaveSettings();
@@ -653,6 +667,26 @@ public partial class MainWindow : Window, IModuleHostServices
     {
         e.Handled = true;
         if (sender is FrameworkElement { Tag: AccountItem item }) await ConnectTwitchAsync(item);
+    }
+
+    /// <summary>Botão da Twitch na linha da conta: sem Twitch, vai para o login; com Twitch, liga/desliga as lives.</summary>
+    private async void TwitchButton_Click(object sender, RoutedEventArgs e)
+    {
+        e.Handled = true;
+        if (sender is not FrameworkElement { Tag: AccountItem item }) return;
+        if (item.TwitchLogin is null)
+        {
+            await ConnectTwitchAsync(item);
+            return;
+        }
+        var view = item.View;
+        var accounts = view.Profile.Accounts;
+        var index = accounts.FindIndex(a => a.ProfileName == view.Config.ProfileName);
+        if (index < 0) return;
+        accounts[index] = accounts[index] with { TwitchWatchLives = !accounts[index].TwitchWatchLives };
+        view.UpdateConfig(accounts[index]);
+        SaveSettings();
+        SyncTwitch();
     }
 
     /// <summary>
@@ -738,6 +772,166 @@ public partial class MainWindow : Window, IModuleHostServices
         SaveSettings();
         _twitch.Stop(view.Config.ProfileName);
         SyncTwitch();
+    }
+
+    // ---------- Kick ----------
+
+    /// <summary>Contas com a Kick conectada assistem as lives da lista da Kick do perfil.</summary>
+    private void SyncKick()
+    {
+        var desired = new List<Kick.KickService.Desired>();
+        foreach (var profile in _settings.Profiles)
+        {
+            if (profile.KickChannels.Count == 0) continue;
+            foreach (var account in profile.Accounts)
+                if (account.KickLogin is { Length: > 0 })
+                    desired.Add(new Kick.KickService.Desired(account.ProfileName, profile.KickChannels, account.KickWatchLives));
+        }
+        _kick.Sync(desired);
+        RefreshKickUi();
+    }
+
+    /// <summary>Botão e dica da Kick em cada conta.</summary>
+    private void RefreshKickUi()
+    {
+        foreach (var (view, item) in _items)
+        {
+            var login = view.Config.KickLogin;
+            string tooltip;
+            if (login is null)
+                tooltip = Loc.T("Conecta a Kick desta conta: ela assiste as lives de bônus da Kick em segundo plano (a Kick só dá pontos em 2 por vez).");
+            else if (view.Profile.KickChannels.Count == 0)
+                tooltip = Loc.T("Kick {0}: nenhum canal configurado (⋯ do perfil → Kick)", login);
+            else if (!view.Config.KickWatchLives)
+                tooltip = Loc.T("Kick {0}", login) + "\n" + Loc.T("Lives desligadas: sem pontos do canal, sem gastar RAM. Clique no botão para ligar.");
+            else
+            {
+                var watching = _kick.WatchingOf(view.Config.ProfileName) ?? [];
+                tooltip = Loc.T("Kick {0}", login) + "\n" + (watching.Count == 0
+                    ? Loc.T("Nenhuma live da lista ao vivo agora")
+                    : Loc.T("Assistindo (pontos do canal): {0}", string.Join(", ", watching))
+                      + "\n" + Loc.T("Clique no botão para desligar as lives (economiza RAM)."));
+            }
+            item.SetKick(tooltip);
+        }
+    }
+
+    private void EditKickChannels(ProfileCard card)
+    {
+        // primeira vez: já vem com os canais parceiros do PokeIdle (dá para apagar/reordenar)
+        var current = card.Profile.KickChannels.Count > 0 ? card.Profile.KickChannels : Core.Kick.KickChannels.Partners.ToList();
+        var window = new Lives.LiveChannelsWindow(this, "Kick", card.Profile.Name, Loc.T("BÔNUS DE LIVE (KICK)"),
+            Loc.T("Um canal por linha (pode colar o endereço, ex.: kick.com/canal), na ordem de prioridade. Cada conta com a Kick conectada assiste as 2 primeiras lives ao vivo da lista (a Kick só dá pontos em 2 por vez), escondidas e sem som. Ficar só no chat não rende pontos na Kick."),
+            current, Core.Kick.KickChannels.Partners, Core.Kick.KickChannels.Normalize);
+        if (window.ShowDialog() != true) return;
+        card.Profile.KickChannels = window.Channels;
+        SaveSettings();
+        SyncKick();
+    }
+
+    /// <summary>Botão da Kick na linha da conta: sem Kick, vai para o login; com Kick, liga/desliga as lives.</summary>
+    private async void KickButton_Click(object sender, RoutedEventArgs e)
+    {
+        e.Handled = true;
+        if (sender is not FrameworkElement { Tag: AccountItem item }) return;
+        if (item.KickLogin is null)
+        {
+            await ConnectKickAsync(item);
+            return;
+        }
+        UpdateAccount(item.View, a => a with { KickWatchLives = !a.KickWatchLives });
+        SyncKick();
+    }
+
+    private async void ConnectKick_Click(object sender, RoutedEventArgs e)
+    {
+        e.Handled = true;
+        if (sender is FrameworkElement { Tag: AccountItem item }) await ConnectKickAsync(item);
+    }
+
+    private void DisconnectKick_Click(object sender, RoutedEventArgs e)
+    {
+        e.Handled = true;
+        if (sender is not FrameworkElement { Tag: AccountItem item }) return;
+        UpdateAccount(item.View, a => a with { KickLogin = null });
+        _kick.Stop(item.View.Config.ProfileName);
+        SyncKick();
+    }
+
+    /// <summary>
+    /// Entrar na Kick como num navegador: abre o site da Kick no navegador DESTA conta e, assim que a pessoa entrar,
+    /// guarda o nome de usuário e liga as lives. No PokeIdle cada conta da Kick fica vinculada para sempre a um treinador.
+    /// </summary>
+    private async Task ConnectKickAsync(AccountItem item)
+    {
+        var view = item.View;
+        if (_host is null || view.Core is not { } core)
+        {
+            ArcadeDialog.Show(this, "Kick", Loc.T("O navegador ainda está abrindo. Tente de novo em instantes."));
+            return;
+        }
+
+        var before = await ReadKickTokenAsync(core);
+        if (before is not null && await Kick.KickSession.ReadUsernameAsync(before) is { } current && ArcadeDialog.Show(this, "Kick",
+                Loc.T("Esta conta já está logada na Kick como {0}.\n\nUsar essa Kick?\n\n(Se for a conta errada, escolha Não: na janela que abrir, saia da Kick e entre na conta certa.)", current),
+                ArcadeDialogButtons.YesNo))
+        {
+            CompleteKickConnection(view, current);
+            return;
+        }
+
+        var window = await AccountWebWindow.OpenAsync(this, _host, view, "Kick", "https://kick.com/");
+        if (window is null)
+        {
+            ArcadeDialog.Show(this, "Kick", Loc.T("Não foi possível abrir a página da Kick."), kind: ArcadeDialogKind.Error);
+            return;
+        }
+
+        // enquanto a janela estiver aberta, vigia o login (a sessão nova é diferente da que já havia, se havia)
+        var closed = false;
+        window.Closed += (_, _) => closed = true;
+        while (!closed)
+        {
+            await Task.Delay(1500);
+            if (closed || view.Core is not { } now) break;
+            if (await ReadKickTokenAsync(now) is { } token && token != before
+                && await Kick.KickSession.ReadUsernameAsync(token) is { } username)
+            {
+                window.Close();
+                CompleteKickConnection(view, username);
+                return;
+            }
+        }
+    }
+
+    private static async Task<string?> ReadKickTokenAsync(Microsoft.Web.WebView2.Core.CoreWebView2 core)
+    {
+        try { return await Kick.KickSession.ReadTokenAsync(core); }
+        catch (Exception ex) when (ex is InvalidOperationException or System.Runtime.InteropServices.COMException)
+        {
+            App.Log(ex); // navegador sendo recriado: tenta de novo no próximo toque
+            return null;
+        }
+    }
+
+    private void CompleteKickConnection(AccountView view, string username)
+    {
+        UpdateAccount(view, a => a with { KickLogin = username, KickWatchLives = true });
+        _kick.Stop(view.Config.ProfileName); // login novo: recomeça
+        SyncKick();
+        if (view.Profile.KickChannels.Count == 0)
+            ArcadeDialog.Show(this, "Kick", Loc.T("Kick {0} conectada.\n\nFalta dizer quais lives ela deve assistir: ⋯ do perfil → Kick (bônus de live)…", username));
+    }
+
+    /// <summary>Troca a configuração de uma conta (lista do perfil + a tela dela) e salva.</summary>
+    private void UpdateAccount(AccountView view, Func<AccountConfig, AccountConfig> change)
+    {
+        var accounts = view.Profile.Accounts;
+        var index = accounts.FindIndex(a => a.ProfileName == view.Config.ProfileName);
+        if (index < 0) return;
+        accounts[index] = change(accounts[index]);
+        view.UpdateConfig(accounts[index]);
+        SaveSettings();
     }
 
     // ---------- Voto no TopIdle ----------
@@ -1090,11 +1284,14 @@ public partial class MainWindow : Window, IModuleHostServices
         edit.Click += (_, _) => EditProfile(card);
         var twitch = new MenuItem { Header = Loc.T("Twitch (bônus de live)…") };
         twitch.Click += (_, _) => EditTwitchChannels(card);
+        var kick = new MenuItem { Header = Loc.T("Kick (bônus de live)…") };
+        kick.Click += (_, _) => EditKickChannels(card);
         var delete = new MenuItem { Header = Loc.T("Excluir perfil"), Foreground = (System.Windows.Media.Brush)FindResource("Err") };
         delete.Click += async (_, _) => await DeleteProfileAsync(card);
         var menu = new ContextMenu { PlacementTarget = button, Placement = System.Windows.Controls.Primitives.PlacementMode.Bottom };
         menu.Items.Add(edit);
         menu.Items.Add(twitch);
+        menu.Items.Add(kick);
         menu.Items.Add(delete);
         menu.IsOpen = true;
         e.Handled = true;

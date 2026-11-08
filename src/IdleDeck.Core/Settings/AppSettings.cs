@@ -1,5 +1,6 @@
 using IdleDeck.Core.Market;
 using System.Text.Json.Serialization;
+using IdleDeck.Core.Kick;
 using IdleDeck.Core.Twitch;
 
 namespace IdleDeck.Core.Settings;
@@ -23,7 +24,10 @@ public record AccountConfig(
     bool Muted = false,
     DateTime? LastVoteUtc = null,
     string? TwitchLogin = null,
-    bool AutoCatch = false);
+    bool AutoCatch = false,
+    bool TwitchWatchLives = true,
+    string? KickLogin = null,
+    bool KickWatchLives = true);
 
 /// <summary>Um jogo: URL, limite de contas e as contas dele.</summary>
 public class GameProfile
@@ -42,6 +46,9 @@ public class GameProfile
 
     /// <summary>Canais da Twitch que dão bônus neste jogo. Todas as contas do perfil entram em todos eles.</summary>
     public List<string> TwitchChannels { get; set; } = [];
+
+    /// <summary>Canais da Kick que dão bônus neste jogo, em ordem de prioridade (cada conta com Kick assiste 2 por vez).</summary>
+    public List<string> KickChannels { get; set; } = [];
 
     /// <summary>Sniper do mercado de cada conta deste perfil (chave = <see cref="AccountConfig.ProfileName"/>).</summary>
     public Dictionary<string, SniperAccountConfig> Sniper { get; set; } = [];
@@ -142,6 +149,7 @@ public class AppSettings
             if (p.FocusedAccount < 0 || p.FocusedAccount >= Math.Max(1, p.Accounts.Count)) p.FocusedAccount = 0;
             if (!Enum.IsDefined(p.Layout)) p.Layout = LayoutMode.Tabs;
             p.TwitchChannels = TwitchChannels.Normalize(p.TwitchChannels ?? []);
+            p.KickChannels = KickChannels.Normalize(p.KickChannels ?? []);
             NormalizeSniper(p);
             p.Zoom = p.Zoom <= 0 || double.IsNaN(p.Zoom) ? 1.0 : Math.Clamp(p.Zoom, GameProfile.MinZoom, GameProfile.MaxZoom);
         }

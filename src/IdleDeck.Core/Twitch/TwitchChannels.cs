@@ -4,6 +4,14 @@ namespace IdleDeck.Core.Twitch;
 
 public static partial class TwitchChannels
 {
+    /// <summary>Canais oficiais do PokeIdle na Twitch (lista do jogo, 2026-11-08). Sugestão para a lista do perfil.</summary>
+    public static readonly IReadOnlyList<string> Partners =
+    [
+        "surskity11", "rodil", "denissnidertv", "daniels", "patopapao", "axtlol", "matta", "clovaobengala", "biscoitao",
+        "cogu", "tftoddy", "luccatv", "techzz", "guaxilol1", "dersin2k", "faturetosl", "mecmeno", "yetz", "revolta",
+        "kennzy", "ookina",
+    ];
+
     [GeneratedRegex("^[a-z0-9_]{1,25}$")]
     private static partial Regex ValidName();
 

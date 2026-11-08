@@ -3,9 +3,9 @@
 **🌐 Language / Idioma / Idioma:** [Português](README.md) · [English](README.en.md) · **Español**
 
 **Gestor de cuentas y herramientas para [pokeidle.io](https://pokeidle.io)** — varias cuentas lado a lado, captura automática, voto en TopIdle, bonos de
-directos de Twitch, ranking de hunts y sniper del mercado. Programa de Windows, de código abierto y gratuito.
+directos de Twitch y Kick, ranking de hunts y sniper del mercado. Programa de Windows, de código abierto y gratuito.
 
-> **Proyecto no oficial.** BookIdle no tiene ninguna relación con pokeidle.io, TopIdle, Twitch, Nintendo ni The Pokémon Company; todas las
+> **Proyecto no oficial.** BookIdle no tiene ninguna relación con pokeidle.io, TopIdle, Twitch, Kick, Nintendo ni The Pokémon Company; todas las
 > marcas pertenecen a sus respectivos dueños. Úsalo bajo tu propia responsabilidad y respeta las reglas del juego (consulta [Uso responsable](#uso-responsable)).
 
 <p align="center">
@@ -53,14 +53,15 @@ ejecuta entera en tu ordenador y **no se nos envía nada**.
 - **Sin telemetría, sin análisis de uso, sin informes de errores enviados.** Las únicas direcciones con las que la aplicación contacta son:
   - `pokeidle.io` — el propio juego y la lista pública de objetos (`/assets/items.json`);
   - `topidle.com` — la página de voto, en la ventana de voto (quien vota eres tú; la aplicación no hace clic en nada);
-  - `twitch.tv` e `irc-ws.chat.twitch.tv` — solo si conectas Twitch (ver abajo);
+  - `twitch.tv` (sitio, chat y directos) — solo si conectas Twitch (ver abajo);
+  - `kick.com` (sitio y directos) — solo si conectas Kick (ver abajo);
   - `github.com` — para comprobar si hay una versión nueva y descargarla;
   - `livepix.gg` — solo si haces clic en "Apoyar".
 - **El código es abierto**: cualquiera puede leer y comprobar todo esto aquí. Descarga BookIdle solo desde esta página.
 
-**Sobre Twitch:** inicias sesión en Twitch desde el propio sitio, dentro del navegador de la cuenta. La aplicación usa el inicio de sesión
-que queda allí (en tu PC) para entrar en los chats de los canales de bono con una conexión ligera, **sin abrir un navegador por canal**.
-Ese inicio de sesión solo se envía a Twitch.
+**Sobre Twitch y Kick:** inicias sesión desde el propio sitio, dentro del navegador de la cuenta. La aplicación usa el inicio de sesión
+que queda allí (en tu PC) para estar en el chat de los canales de bono (solo Twitch) y mirar los directos que dan puntos del canal. Ese
+inicio de sesión solo se envía a la propia Twitch/Kick.
 
 ---
 
@@ -91,10 +92,14 @@ Ese inicio de sesión solo se envía a Twitch.
 - El botón muestra **cuánto falta** para poder votar de nuevo ("Votar en 5 h"), leyendo lo que dice el propio juego — vale incluso para
   votos hechos fuera de la aplicación — y se ilumina en amarillo cuando ya se puede votar.
 
-### Bonos de directos de Twitch
-- **Conectar Twitch** en cada cuenta (cada una con su Twitch), con la lista de canales de bono del perfil.
-- La cuenta se queda presente en el chat de los canales **sin que abras ningún directo** y sin gastar la memoria de un navegador por canal.
-- Icono de estado por cuenta (conectada en todos los canales, parcial, sin clave).
+### Bonos de directos de Twitch y Kick (puntos del canal)
+- **Conectar Twitch** y **Conectar Kick** en cada cuenta (cada una con la suya), con la lista de canales de bono del perfil (⋯ del perfil).
+  La lista ya trae los canales oficiales de PokeIdle; el orden es la prioridad (pon primero los canales en los que eres sub).
+- Cada cuenta **mira sola los 2 primeros directos de la lista que estén en vivo** (Twitch y Kick solo dan puntos en 2 a la vez), ocultos y
+  sin sonido. Cuando uno termina, entra el siguiente; un canal más arriba que empieza en vivo ocupa el lugar.
+- Para gastar poca memoria: en Twitch, sitio móvil, sin imágenes y en la menor calidad (~210 MB por directo); en Kick, ~290 MB por directo.
+- Botón **Twitch: ON/OFF** y **Kick: ON/OFF** en cada cuenta, para apagar los directos cuando quieras ahorrar memoria.
+- En Twitch la cuenta también está en el chat de los canales, con una conexión ligera.
 
 ### `/hunt` — qué hunt rinde más
 - Muestra, **para el Pokémon que está en campo en cada cuenta**, las mejores hunts por **XP/h** y por **oro/h neto** (ya descontando las

@@ -3,9 +3,9 @@
 **🌐 Language / Idioma / Idioma:** **Português** · [English](README.en.md) · [Español](README.es.md)
 
 **Gerenciador de contas e ferramentas para o [pokeidle.io](https://pokeidle.io)** — várias contas lado a lado, captura automática, voto no TopIdle, bônus de
-live da Twitch, ranking de hunts e sniper do mercado. Programa de Windows, de código aberto e gratuito.
+live da Twitch e da Kick, ranking de hunts e sniper do mercado. Programa de Windows, de código aberto e gratuito.
 
-> **Projeto não oficial.** O BookIdle não tem ligação com o pokeidle.io, o TopIdle, a Twitch, a Nintendo ou a The Pokémon Company; todas as
+> **Projeto não oficial.** O BookIdle não tem ligação com o pokeidle.io, o TopIdle, a Twitch, a Kick, a Nintendo ou a The Pokémon Company; todas as
 > marcas são dos respectivos donos. Use por sua conta e risco e respeite as regras do jogo (veja [Uso responsável](#uso-responsável)).
 
 <p align="center">
@@ -53,13 +53,14 @@ computador e **nada é enviado para nós**.
 - **Sem telemetria, sem análise de uso, sem relatório de erros enviado.** Os endereços que o app contata são só estes:
   - `pokeidle.io` — o próprio jogo e a lista pública de itens (`/assets/items.json`);
   - `topidle.com` — a página de voto, na janela de voto (quem vota é você; o app não clica em nada);
-  - `twitch.tv` e `irc-ws.chat.twitch.tv` — só se você conectar a Twitch (veja abaixo);
+  - `twitch.tv` (site, chat e lives) — só se você conectar a Twitch (veja abaixo);
+  - `kick.com` (site e lives) — só se você conectar a Kick (veja abaixo);
   - `github.com` — conferir se há versão nova e baixá-la;
   - `livepix.gg` — só se você clicar em "Apoiar".
 - **O código é aberto**: qualquer pessoa pode ler e conferir tudo isso aqui. Baixe o BookIdle só desta página.
 
-**Sobre a Twitch:** você entra na Twitch pelo próprio site, dentro do navegador da conta. O app usa o login que ficou ali (no seu PC) para
-entrar nos chats dos canais de bônus com uma conexão leve, **sem abrir um navegador por canal**. Esse login só é enviado à Twitch.
+**Sobre a Twitch e a Kick:** você entra pelo próprio site, dentro do navegador da conta. O app usa o login que ficou ali (no seu PC) para
+ficar no chat dos canais de bônus (só Twitch) e assistir às lives que rendem pontos do canal. Esse login só é enviado à própria Twitch/Kick.
 
 ---
 
@@ -90,10 +91,14 @@ entrar nos chats dos canais de bônus com uma conexão leve, **sem abrir um nave
 - O botão mostra **quanto falta** para poder votar de novo ("Votar em 5 h"), lendo o que o próprio jogo diz — vale até para votos feitos
   fora do app — e acende em amarelo quando já dá para votar.
 
-### Bônus de live da Twitch
-- **Conectar Twitch** em cada conta (cada uma com a sua Twitch), com a lista de canais de bônus do perfil.
-- A conta fica presente no chat dos canais **sem você abrir nenhuma live** e sem gastar a memória de um navegador por canal.
-- Ícone de estado por conta (conectada em todos os canais, parcial, sem chave).
+### Bônus de live da Twitch e da Kick (pontos do canal)
+- **Conectar Twitch** e **Conectar Kick** em cada conta (cada uma com a sua), com a lista de canais de bônus do perfil (⋯ do perfil).
+  A lista já vem com os canais oficiais do PokeIdle; a ordem é a prioridade (coloque primeiro os canais em que você é sub).
+- Cada conta **assiste sozinha às 2 primeiras lives da lista que estiverem ao vivo** (a Twitch e a Kick só dão pontos em 2 por vez),
+  escondidas e sem som. Quando uma acaba, entra a próxima; um canal mais acima que entra ao vivo assume a vaga.
+- Para gastar pouca memória: na Twitch, site de celular, sem imagens e na menor qualidade (~210 MB por live); na Kick, ~290 MB por live.
+- Botão **Twitch: ON/OFF** e **Kick: ON/OFF** em cada conta, para desligar as lives quando quiser poupar memória.
+- Na Twitch a conta também fica no chat dos canais, com uma conexão leve.
 
 ### `/hunt` — qual hunt rende mais
 - Mostra, **para o Pokémon que está em campo em cada conta**, as melhores hunts por **XP/h** e por **ouro/h líquido** (já descontando

@@ -1,5 +1,7 @@
 using System.IO;
 using System.Windows.Threading;
+using IdleDeck.App.Browser;
+using IdleDeck.App.Lives;
 using IdleDeck.Core.Twitch;
 using Microsoft.Web.WebView2.Core;
 
@@ -9,26 +11,30 @@ namespace IdleDeck.App.Twitch;
 /// Mantém uma conexão de chat por conta com a Twitch ligada (<see cref="TwitchChatConnection"/>). A chave vem do próprio
 /// navegador da conta: quem entrou na Twitch ali deixa o login e a chave nos cookies, e a conexão leve (poucos MB, sem
 /// navegador por canal) usa essa mesma chave — como um navegador só com o chat de todos os canais.
+/// Junto, cada conta assiste até 2 lives da lista (<see cref="LiveWatcher"/> + <see cref="TwitchLiveSite"/>), que é o que rende pontos do canal.
 /// </summary>
 public sealed class TwitchService : IDisposable
 {
     /// <summary>Uma conta que deve estar no chat: o login da Twitch dela e os canais do perfil.</summary>
-    public sealed record Desired(string Account, string Login, IReadOnlyList<string> Channels);
+    public sealed record Desired(string Account, string Login, IReadOnlyList<string> Channels, bool WatchLives = true);
 
-    public sealed record State(TwitchStatus Status, int Joined, int Wanted);
+    public sealed record State(TwitchStatus Status, int Joined, int Wanted, IReadOnlyList<string> Watching);
 
     private static readonly TimeSpan BrowserWait = TimeSpan.FromMinutes(2);
 
     private readonly Dispatcher _ui;
     private readonly Func<string, CoreWebView2?> _coreOf;
-    private readonly Dictionary<string, (TwitchChatConnection Chat, string Login)> _chats = [];
+    private readonly Func<BrowserHost?> _hostOf;
+    private readonly Dictionary<string, (TwitchChatConnection Chat, string Login, LiveWatcher Watcher)> _chats = [];
 
     /// <param name="ui">Thread da tela: os cookies só são lidos nela.</param>
     /// <param name="coreOf">O navegador de uma conta (pelo nome do perfil dela), ou null enquanto ainda não subiu.</param>
-    public TwitchService(Dispatcher ui, Func<string, CoreWebView2?> coreOf)
+    /// <param name="hostOf">O ambiente do navegador, ou null enquanto não subiu (ou está sendo recriado).</param>
+    public TwitchService(Dispatcher ui, Func<string, CoreWebView2?> coreOf, Func<BrowserHost?> hostOf)
     {
         _ui = ui;
         _coreOf = coreOf;
+        _hostOf = hostOf;
     }
 
     /// <summary>Algo mudou (conectou, entrou num canal, caiu…). Pode vir de qualquer thread.</summary>
@@ -36,7 +42,7 @@ public sealed class TwitchService : IDisposable
 
     public State? StateOf(string account) =>
         _chats.TryGetValue(account, out var entry)
-            ? new State(entry.Chat.Status, entry.Chat.JoinedChannels.Count, entry.Chat.WantedChannels.Count)
+            ? new State(entry.Chat.Status, entry.Chat.JoinedChannels.Count, entry.Chat.WantedChannels.Count, entry.Watcher.Watching)
             : null;
 
     /// <summary>
@@ -54,15 +60,23 @@ public sealed class TwitchService : IDisposable
             if (_chats.TryGetValue(d.Account, out var entry))
             {
                 entry.Chat.SetChannels(d.Channels);
+                entry.Watcher.SetChannels(d.Channels);
+                entry.Watcher.SetEnabled(d.WatchLives);
                 continue;
             }
             var chat = new TwitchChatConnection(d.Login, ct => ProvideTokenAsync(d.Account, d.Login, ct));
             chat.StateChanged += (_, _) => Changed?.Invoke();
             chat.Error += (_, e) => App.Log(e);
             chat.Trace += (_, line) => TwitchLog.Write(d.Account, line);
-            _chats[d.Account] = (chat, d.Login);
+            var watcher = new LiveWatcher(d.Account, new TwitchLiveSite(), text => TwitchLog.Write(d.Account, "[lives] " + text),
+                _ui, _hostOf, ct => ProvideTokenAsync(d.Account, d.Login, ct));
+            watcher.Changed += () => Changed?.Invoke();
+            _chats[d.Account] = (chat, d.Login, watcher);
             chat.SetChannels(d.Channels);
             chat.Start();
+            watcher.SetChannels(d.Channels);
+            watcher.SetEnabled(d.WatchLives);
+            watcher.Start();
         }
         Changed?.Invoke();
     }
@@ -71,6 +85,7 @@ public sealed class TwitchService : IDisposable
     {
         if (!_chats.Remove(account, out var entry)) return;
         _ = entry.Chat.DisposeAsync().AsTask();
+        entry.Watcher.Dispose();
         Changed?.Invoke();
     }
 

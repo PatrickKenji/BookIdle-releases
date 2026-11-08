@@ -156,8 +156,14 @@ public sealed class AccountItem : INotifyPropertyChanged
 
     public string TwitchTooltip => _twitchTooltip;
 
-    /// <summary>Texto do botão da Twitch na linha da conta: chama para conectar, ou mostra com qual login está ligada.</summary>
-    public string TwitchButtonLabel => TwitchLogin is null ? Loc.T("Conectar Twitch") : Loc.T("Twitch: {0}", TwitchLogin);
+    /// <summary>
+    /// Texto do botão da Twitch na linha da conta: chama para conectar; conectada, o botão liga/desliga as lives
+    /// (as páginas que juntam os pontos do canal, que gastam RAM).
+    /// </summary>
+    public string TwitchButtonLabel => TwitchLogin is null ? Loc.T("Conectar Twitch")
+        : TwitchWatchLives ? Loc.T("Twitch: ON") : Loc.T("Twitch: OFF");
+
+    public bool TwitchWatchLives => View.Config.TwitchWatchLives;
 
     public bool TwitchConnected => TwitchLogin is not null;
 
@@ -178,8 +184,44 @@ public sealed class AccountItem : INotifyPropertyChanged
         OnPropertyChanged(nameof(TwitchConnectLabel));
         OnPropertyChanged(nameof(TwitchButtonLabel));
         OnPropertyChanged(nameof(TwitchConnected));
+        OnPropertyChanged(nameof(TwitchWatchLives));
         OnPropertyChanged(nameof(TwitchDisconnectLabel));
         OnPropertyChanged(nameof(TwitchDisconnectVisibility));
+    }
+
+    // ---------- Kick ----------
+
+    private string _kickTooltip = "";
+
+    /// <summary>Usuário da Kick ligado a esta conta (null = nenhum).</summary>
+    public string? KickLogin => View.Config.KickLogin;
+
+    public bool KickConnected => KickLogin is not null;
+
+    public bool KickWatchLives => View.Config.KickWatchLives;
+
+    /// <summary>Texto do botão da Kick: chama para conectar; conectada, o botão liga/desliga as lives (gastam RAM).</summary>
+    public string KickButtonLabel => KickLogin is null ? Loc.T("Conectar Kick")
+        : KickWatchLives ? Loc.T("Kick: ON") : Loc.T("Kick: OFF");
+
+    public string KickTooltip => _kickTooltip;
+
+    public string KickConnectLabel => KickLogin is null ? Loc.T("Conectar Kick…") : Loc.T("Reconectar Kick…");
+
+    public string KickDisconnectLabel => Loc.T("Desconectar Kick ({0})", KickLogin);
+
+    public Visibility KickDisconnectVisibility => KickLogin is null ? Visibility.Collapsed : Visibility.Visible;
+
+    public void SetKick(string tooltip)
+    {
+        _kickTooltip = tooltip;
+        OnPropertyChanged(nameof(KickTooltip));
+        OnPropertyChanged(nameof(KickConnected));
+        OnPropertyChanged(nameof(KickWatchLives));
+        OnPropertyChanged(nameof(KickButtonLabel));
+        OnPropertyChanged(nameof(KickConnectLabel));
+        OnPropertyChanged(nameof(KickDisconnectLabel));
+        OnPropertyChanged(nameof(KickDisconnectVisibility));
     }
 
     // ---------- Voto no TopIdle ----------

@@ -2,10 +2,10 @@
 
 **🌐 Language / Idioma / Idioma:** [Português](README.md) · **English** · [Español](README.es.md)
 
-**Account manager and tools for [pokeidle.io](https://pokeidle.io)** — several accounts side by side, auto catch, TopIdle voting, Twitch live
+**Account manager and tools for [pokeidle.io](https://pokeidle.io)** — several accounts side by side, auto catch, TopIdle voting, Twitch and Kick live
 bonuses, hunt ranking and a market sniper. A free, open-source Windows program.
 
-> **Unofficial project.** BookIdle is not affiliated with pokeidle.io, TopIdle, Twitch, Nintendo or The Pokémon Company; all trademarks
+> **Unofficial project.** BookIdle is not affiliated with pokeidle.io, TopIdle, Twitch, Kick, Nintendo or The Pokémon Company; all trademarks
 > belong to their respective owners. Use it at your own risk and respect the game's rules (see [Responsible use](#responsible-use)).
 
 <p align="center">
@@ -53,14 +53,15 @@ computer and **nothing is sent to us**.
 - **No telemetry, no usage analytics, no error reports sent.** The only addresses the app contacts are:
   - `pokeidle.io` — the game itself and the public item list (`/assets/items.json`);
   - `topidle.com` — the voting page, in the vote window (you do the voting; the app clicks nothing);
-  - `twitch.tv` and `irc-ws.chat.twitch.tv` — only if you connect Twitch (see below);
+  - `twitch.tv` (site, chat and streams) — only if you connect Twitch (see below);
+  - `kick.com` (site and streams) — only if you connect Kick (see below);
   - `github.com` — to check for a new version and download it;
   - `livepix.gg` — only if you click "Support".
 - **The code is open**: anyone can read and verify all of this here. Download BookIdle only from this page.
 
-**About Twitch:** you sign in to Twitch on the Twitch website itself, inside the account's browser. The app uses the login that stays
-there (on your PC) to join the bonus channels' chats with a lightweight connection, **without opening a browser per channel**. That login
-is only ever sent to Twitch.
+**About Twitch and Kick:** you sign in on the website itself, inside the account's browser. The app uses the login that stays there (on
+your PC) to stay in the bonus channels' chats (Twitch only) and to watch the streams that earn channel points. That login is only ever sent
+to Twitch/Kick themselves.
 
 ---
 
@@ -91,10 +92,14 @@ is only ever sent to Twitch.
 - The button shows **how long is left** until you can vote again ("Vote in 5 h"), reading what the game itself reports — it even works
   for votes made outside the app — and lights up yellow when you can vote.
 
-### Twitch live bonuses
-- **Connect Twitch** on each account (each with its own Twitch), with the profile's list of bonus channels.
-- The account stays present in the channels' chats **without you opening any stream** and without spending a browser's memory per channel.
-- Status icon per account (connected to all channels, partial, no key).
+### Twitch and Kick live bonuses (channel points)
+- **Connect Twitch** and **Connect Kick** on each account (each with its own), with the profile's list of bonus channels (profile ⋯).
+  The list comes with PokeIdle's official channels; the order is the priority (put the channels where you're a sub first).
+- Each account **watches the first 2 live streams on the list by itself** (Twitch and Kick only give points on 2 at a time), hidden and
+  muted. When one ends, the next one comes in; a channel higher up that goes live takes the slot.
+- To use little memory: on Twitch, mobile site, no images and lowest quality (~210 MB per stream); on Kick, ~290 MB per stream.
+- **Twitch: ON/OFF** and **Kick: ON/OFF** button on each account, to turn the streams off whenever you want to save memory.
+- On Twitch the account also stays in the channels' chats, with a lightweight connection.
 
 ### `/hunt` — which hunt pays best
 - Shows, **for the Pokémon on the field in each account**, the best hunts by **XP/h** and by **net gold/h** (already discounting the
