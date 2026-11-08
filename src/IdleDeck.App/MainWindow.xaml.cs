@@ -1679,6 +1679,28 @@ public partial class MainWindow : Window, IModuleHostServices
 
     public IReadOnlyList<int> ContasDoPerfilSelecionado() => ViewsOf(Profile).Select(v => v.RuntimeId).ToList();
 
+    public (IReadOnlyList<string> Twitch, IReadOnlyList<string> Kick) CanaisDasLives() =>
+        (Profile.TwitchChannels.ToList(), Profile.KickChannels.ToList());
+
+    public IReadOnlyList<LiveAccountInfo> ContasDasLives() =>
+        ViewsOf(Profile).Select(v => new LiveAccountInfo(v.Config.Name, v.Config.ProfileName, v.Config.TwitchLogin, v.Config.KickLogin,
+            _twitch.StateOf(v.Config.ProfileName)?.Watching ?? [], _kick.WatchingOf(v.Config.ProfileName) ?? [])).ToList();
+
+    public async Task<string?> ChaveTwitchAsync(string profileName)
+    {
+        var view = _views.FirstOrDefault(v => v.Config.ProfileName == profileName);
+        if (view?.Core is not { } core || view.Config.TwitchLogin is not { } login) return null;
+        var session = await ReadTwitchSessionAsync(core);
+        return session is not null && session.Login == login ? session.Token : null; // nunca a chave de outro login
+    }
+
+    public async Task<string?> ChaveKickAsync(string profileName)
+    {
+        var view = _views.FirstOrDefault(v => v.Config.ProfileName == profileName);
+        if (view?.Core is not { } core || view.Config.KickLogin is null) return null;
+        return await ReadKickTokenAsync(core);
+    }
+
     public IReadOnlyList<int> TodasAsContasDoJogo(string host) =>
         _views.Where(v => Uri.TryCreate(v.Profile.Url, UriKind.Absolute, out var uri) && ModuleRouter.HostMatches(uri.Host, host))
               .Select(v => v.RuntimeId).ToList();

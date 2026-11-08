@@ -99,6 +99,7 @@ inicio de sesión solo se envía a la propia Twitch/Kick.
   sin sonido. Cuando uno termina, entra el siguiente; un canal más arriba que empieza en vivo ocupa el lugar.
 - Para gastar poca memoria: en Twitch, sitio móvil, sin imágenes y en la menor calidad (~210 MB por directo); en Kick, ~290 MB por directo.
 - Botón **Twitch: ON/OFF** y **Kick: ON/OFF** en cada cuenta, para apagar los directos cuando quieras ahorrar memoria.
+- Ventana **Puntos de Directos** (botón debajo del Sniper): quién está en vivo, el saldo de puntos de cada cuenta en cada canal y qué está mirando cada una.
 - En Twitch la cuenta también está en el chat de los canales, con una conexión ligera.
 
 ### `/hunt` — qué hunt rinde más

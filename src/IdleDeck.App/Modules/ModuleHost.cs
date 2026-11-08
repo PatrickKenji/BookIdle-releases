@@ -22,7 +22,7 @@ public sealed class ModuleHost
     }
 
     /// <summary>Módulos disponíveis no app.</summary>
-    public static IReadOnlyList<IModuleView> All(IModuleHostServices host) => [new Hunt.HuntModule(host), new Sniper.SniperModule(host)];
+    public static IReadOnlyList<IModuleView> All(IModuleHostServices host) => [new Hunt.HuntModule(host), new Sniper.SniperModule(host), new Lives.LivesModule(host)];
 
     public IReadOnlyList<IModuleView> Modules { get; }
 

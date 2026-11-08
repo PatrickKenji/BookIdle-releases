@@ -24,6 +24,22 @@ public interface IModuleHostServices
     /// <summary>Aviso na bandeja do Windows.</summary>
     void Notificar(string titulo, string texto);
 
+    /// <summary>Listas de canais da Twitch e da Kick do perfil selecionado (ordem = prioridade).</summary>
+    (IReadOnlyList<string> Twitch, IReadOnlyList<string> Kick) CanaisDasLives();
+
+    /// <summary>Contas do perfil selecionado, com o login da Twitch/Kick (null = não conectada) e o que assistem agora.</summary>
+    IReadOnlyList<LiveAccountInfo> ContasDasLives();
+
+    /// <summary>A chave da Twitch da conta (do navegador dela), ou null.</summary>
+    Task<string?> ChaveTwitchAsync(string profileName);
+
+    /// <summary>A sessão da Kick da conta (do navegador dela), ou null.</summary>
+    Task<string?> ChaveKickAsync(string profileName);
+
     /// <summary>Contas, nomes ou o perfil selecionado mudaram: o painel deve se redesenhar.</summary>
     event EventHandler? ContasMudaram;
 }
+
+/// <summary>Uma conta para a janela de lives.</summary>
+public sealed record LiveAccountInfo(string Name, string ProfileName, string? TwitchLogin, string? KickLogin,
+    IReadOnlyList<string> TwitchWatching, IReadOnlyList<string> KickWatching);

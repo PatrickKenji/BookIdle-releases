@@ -53,8 +53,11 @@ public static class TwitchGql
         return result;
     }
 
-    /// <summary>Estado de todos os canais (em lotes). Erro de rede/resposta: <see cref="HttpRequestException"/> ou <see cref="FormatException"/>.</summary>
-    public static async Task<List<TwitchChannelState>> ReadChannelsAsync(string token, IReadOnlyList<string> channels, CancellationToken ct = default)
+    /// <summary>
+    /// Estado de todos os canais (em lotes). Sem chave (<paramref name="token"/> null) só "ao vivo" vale (saldo/seguir vêm
+    /// vazios). Erro de rede/resposta: <see cref="HttpRequestException"/> ou <see cref="FormatException"/>.
+    /// </summary>
+    public static async Task<List<TwitchChannelState>> ReadChannelsAsync(string? token, IReadOnlyList<string> channels, CancellationToken ct = default)
     {
         var result = new List<TwitchChannelState>();
         foreach (var batch in channels.Chunk(MaxPerQuery))
@@ -64,7 +67,7 @@ public static class TwitchGql
                 Content = new StringContent(JsonSerializer.Serialize(new { query = ChannelsQuery(batch) }), Encoding.UTF8, "application/json"),
             };
             request.Headers.Add("Client-Id", ClientId);
-            request.Headers.Add("Authorization", "OAuth " + token);
+            if (token is not null) request.Headers.Add("Authorization", "OAuth " + token);
             using var response = await Http.SendAsync(request, ct);
             var text = await response.Content.ReadAsStringAsync(ct);
             if (!response.IsSuccessStatusCode) throw new HttpRequestException($"Twitch respondeu {(int)response.StatusCode}");

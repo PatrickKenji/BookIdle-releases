@@ -99,6 +99,7 @@ to Twitch/Kick themselves.
   muted. When one ends, the next one comes in; a channel higher up that goes live takes the slot.
 - To use little memory: on Twitch, mobile site, no images and lowest quality (~210 MB per stream); on Kick, ~290 MB per stream.
 - **Twitch: ON/OFF** and **Kick: ON/OFF** button on each account, to turn the streams off whenever you want to save memory.
+- **Stream Points** window (button below Sniper): who is live, each account's points balance on each channel and what each one is watching.
 - On Twitch the account also stays in the channels' chats, with a lightweight connection.
 
 ### `/hunt` — which hunt pays best

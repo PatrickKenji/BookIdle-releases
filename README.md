@@ -98,6 +98,7 @@ ficar no chat dos canais de bônus (só Twitch) e assistir às lives que rendem 
   escondidas e sem som. Quando uma acaba, entra a próxima; um canal mais acima que entra ao vivo assume a vaga.
 - Para gastar pouca memória: na Twitch, site de celular, sem imagens e na menor qualidade (~210 MB por live); na Kick, ~290 MB por live.
 - Botão **Twitch: ON/OFF** e **Kick: ON/OFF** em cada conta, para desligar as lives quando quiser poupar memória.
+- Janela **Pontos das Lives** (botão abaixo do Sniper): quem está ao vivo, o saldo de pontos de cada conta em cada canal e o que cada uma está assistindo.
 - Na Twitch a conta também fica no chat dos canais, com uma conexão leve.
 
 ### `/hunt` — qual hunt rende mais
