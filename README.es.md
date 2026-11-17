@@ -107,6 +107,7 @@ inicio de sesión solo se envía a la propia Twitch/Kick.
   pociones, revives y bolas que gasta la cuenta), con el riesgo de cada una y las siguientes que desbloqueas.
 - Usa **las fórmulas y el catálogo del propio juego, en vivo** — cuando el juego cambia, el cálculo lo sigue.
 - Entiende el **día estacional** (el tipo del día duplica ataque, defensa y vida en la hunt del mapa) y permite ajustar los objetivos por golpe del TM AoE.
+- Pestaña **Outland (tokens)**: la hunt de Outland que limpia más rápido, la probabilidad de cada drop raro (Boss Token, fragmentos y Hueso del Sacrificio) en tu escalón y el escalón que tu nivel ya desbloquea.
 
 ### Sniper del mercado
 - Compra solo, **en segundo plano**, ofertas del Mercado de la Comunidad que coincidan con tus reglas — sin que mires el mercado. Las

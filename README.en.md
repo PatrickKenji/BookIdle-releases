@@ -107,6 +107,7 @@ to Twitch/Kick themselves.
   potions, revives and balls the account spends), with each one's risk and the next ones you unlock.
 - Uses **the game's own formulas and catalog, live** — when the game changes, the calculation follows.
 - Understands the **seasonal day** (the day's type doubles attack, defense and HP in the map hunt) and lets you adjust the TM AoE hits per target.
+- **Outland (tokens)** tab: the Outland hunt that clears fastest, the chance of each rare drop (Boss Token, fragments and Sacrifice Bone) at your tier, and the tier your level already unlocks.
 
 ### Market Sniper
 - Automatically buys, **in the background**, Community Market offers that match your rules — without you watching the market. The

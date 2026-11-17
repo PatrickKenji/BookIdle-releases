@@ -28,29 +28,84 @@
     maxAtaquesPorAbate: 1000,
     aoeAlvosPadrao: 2, // o jogo não diz quantos selvagens ficam no 11×11; ajustável por conta
     limiarPadrao: 0.3,
-    chanceBossPadrao: 0.0005, // Bronze Boss Token por abate na Outland 1 (welcome.chanceBossToken)
-    chanceFragmentoPadrao: 0.000005, // Chave, Shiny Stone e Bicicleta (cada um), na Outland 1
+    // Raros da Outland por abate na Outland 1, sem bônus (jogo v1.426, 16/11/2026); o welcome manda os valores no ar.
+    chanceBossPadrao: 0.0001, // Bronze Boss Token, 1 em 10.000 (welcome.chanceBossToken)
+    chanceFragmentoPadrao: 0.000004, // Chave, Shiny Stone e Bicicleta, 1 em 250.000 cada
+    chanceOssoPadrao: 0.000004, // Osso do Sacrifício, 1 em 250.000 (shared/sacrificio.mjs)
   };
 
-  /** A escada das Outlands do jogo (shared/outland-tiers.mjs): rede de baixo para o welcome que não trouxer a lista. */
-  const TIERS_OUTLAND = [
-    { tier: 1, rotulo: 'Outland 1', nivel: 150, mult: 1 }, { tier: 2, rotulo: 'Outland 2', nivel: 1000, mult: 1.25 },
-    { tier: 3, rotulo: 'Outland 3', nivel: 2000, mult: 1.5 }, { tier: 4, rotulo: 'Outland 4', nivel: 4000, mult: 2 },
-    { tier: 5, rotulo: 'Outland 5', nivel: 8000, mult: 3 }, { tier: 6, rotulo: 'Outland 6', nivel: 16000, mult: 4 },
-    { tier: 7, rotulo: 'Outland 7', nivel: 24000, mult: 6 }, { tier: 8, rotulo: 'Outland 8', nivel: 36000, mult: 8 },
+  /**
+   * A escada das Outlands do jogo (shared/outland-tiers.mjs, v1.426: 40 degraus, ids 101–140): rede de baixo para
+   * o welcome que não trouxer a lista. Cada degrau só multiplica os raros (token, fragmentos e osso).
+   */
+  const ESCADA_OUTLAND = [
+    [150, 1], [500, 1.1], [750, 1.15], [1000, 1.25], [1250, 1.3], [1500, 1.5], [1800, 1.65], [2000, 1.85], [2250, 2], [2500, 2.15],
+    [3000, 2.3], [3250, 2.45], [3500, 2.6], [4000, 2.75], [5000, 3], [6000, 3.25], [7000, 3.5], [8000, 3.75], [10000, 4], [11000, 4.25],
+    [12000, 4.5], [14000, 5], [15000, 5.25], [17000, 6], [19000, 6.5], [21000, 7], [24000, 7.5], [28000, 8], [32000, 8.5], [36000, 9],
+    [38000, 9.5], [40000, 10], [41000, 10.5], [43000, 11], [45000, 12], [48000, 13], [52000, 14], [58000, 16], [60000, 17], [65000, 20],
   ];
+  const TIERS_OUTLAND = ESCADA_OUTLAND.map(([nivel, mult], i) => ({ tier: 101 + i, numero: i + 1, rotulo: `Outland ${i + 1}`, nivel, mult }));
+  /** Os 8 degraus de antes da v1.426 (o jogo ainda aceita: cada um vira o degrau novo do mesmo nível). */
+  const DEGRAU_ANTIGO = { 1: 150, 2: 1000, 3: 2000, 4: 4000, 5: 8000, 6: 16000, 7: 24000, 8: 36000 };
+
+  const escadaOutland = (tiers) => (tiers?.length ? tiers : TIERS_OUTLAND);
+
+  /** O melhor degrau que o nível alcança (o primeiro, se nenhum). */
+  function degrauPeloNivel(nivel, tiers) {
+    const lista = escadaOutland(tiers);
+    const n = Number(nivel) || 0;
+    for (let i = lista.length - 1; i >= 0; i--) if (n >= lista[i].nivel) return lista[i];
+    return lista[0];
+  }
+
+  /** A ficha do degrau escolhido, aceitando o id novo (101–140) e o antigo (1–8), como o `outlandTier` do jogo. */
+  function fichaDoDegrau(tier, tiers) {
+    const lista = escadaOutland(tiers);
+    const n = Number(tier);
+    const direto = lista.find((x) => x.tier === n);
+    if (direto) return direto;
+    if (Object.hasOwn(DEGRAU_ANTIGO, n)) {
+      let ficha = lista[0];
+      for (const x of lista) if (x.nivel <= DEGRAU_ANTIGO[n]) ficha = x;
+      return ficha;
+    }
+    return lista[0];
+  }
 
   /**
    * O degrau de Outland que vale AGORA: o escolhido pela conta, ou o melhor que o nível alcança
    * (o servidor refaz essa poda a cada abate, `tierOutlandValido`). Quem manda nos números é o welcome.
    */
   function degrauOutland(eu, tiers) {
-    const lista = tiers?.length ? tiers : TIERS_OUTLAND;
-    const nivel = Number(eu?.level) || 0;
-    const escolhido = lista.find((x) => x.tier === Number(eu?.outlandTier)) ?? lista[0];
-    if (nivel >= escolhido.nivel) return escolhido;
-    for (let i = lista.length - 1; i >= 0; i--) if (nivel >= lista[i].nivel) return lista[i];
-    return lista[0];
+    const escolhido = fichaDoDegrau(eu?.outlandTier, tiers);
+    if ((Number(eu?.level) || 0) >= escolhido.nivel) return escolhido;
+    return degrauPeloNivel(eu?.level, tiers);
+  }
+
+  /** O degrau seguinte ao que o nível já alcança (null no topo da escada). */
+  function proximoDegrau(nivel, tiers) {
+    const n = Number(nivel) || 0;
+    return escadaOutland(tiers).find((x) => x.nivel > n) ?? null;
+  }
+
+  /** Loot Boost da Loja ativo: o jogo multiplica por ele a chance de todo raro da Outland. */
+  function multLootBoost(eu, tiposBoost, agora) {
+    const ate = Number(eu?.loja?.boosts?.loot) || 0;
+    if (agora >= ate) return 1;
+    return Number((tiposBoost ?? []).find((b) => b.chave === 'loot')?.mult) || 1;
+  }
+
+  /** Os raros da Outland, cada um com a chance por abate já multiplicada (degrau × Loot Boost). */
+  function rarosOutland(consts, mult) {
+    const frag = consts.chanceFragmentos ?? [];
+    const base = (v, padrao) => (Number(v) > 0 ? Number(v) : padrao);
+    return [
+      { chave: 'boss', nome: 'Bronze Boss Token', chance: base(consts.chanceBossToken, REGRAS.chanceBossPadrao) * mult },
+      { chave: 'chave', nome: 'Fragmento de Chave', chance: base(frag[0], REGRAS.chanceFragmentoPadrao) * mult },
+      { chave: 'shiny', nome: 'Fragmento de Shiny Stone', chance: base(frag[1], REGRAS.chanceFragmentoPadrao) * mult },
+      { chave: 'bicicleta', nome: 'Fragmento de Bicicleta', chance: base(frag[2], REGRAS.chanceFragmentoPadrao) * mult },
+      { chave: 'osso', nome: 'Osso do Sacrifício', chance: base(consts.chanceOsso, REGRAS.chanceOssoPadrao) * mult },
+    ];
   }
 
   const tiposDe = (esp) => [esp.type1, esp.type2].filter(Boolean);
@@ -205,7 +260,7 @@
     const rar = b?.equipadaRar ?? (b?.equipada != null ? (b.lista ?? []).find((x) => x.id === b.equipada)?.rar : null) ?? null;
     if (!rar) return null;
     let fator = 1 + Number((consts?.bicicletas?.raridades ?? []).find((r) => r.id === rar)?.velocidade);
-    if (!Number.isFinite(fator)) fator = Number(jogo.fatorPassoDaRaridade?.(rar));
+    if (!Number.isFinite(fator)) fator = Number((jogo.fatorPassoNaHunt ?? jogo.fatorPassoDaRaridade)?.(rar));
     return fator > 1 ? { raridade: rar, fator } : null;
   }
 
@@ -403,10 +458,14 @@
     // Pódio de ginásio (jogo v1.377): +25% / +10% / +5% de dano na hunt para o pokémon de um tipo que o dono lidera, sem empilhar.
     const podio = ctx.eu?.ginasiosPodio ?? ctx.eu?.ginasios;
     const multGinasio = Number(ctx.jogo.multBuffGinasio?.(heroi.tipos, podio)) || 1;
-    const degrau = degrauOutland(ctx.eu, ctx.consts.outlandTiers);
-    const chanceBoss = (Number(ctx.consts.chanceBossToken) || REGRAS.chanceBossPadrao) * degrau.mult;
-    const chanceFragmentos = (ctx.consts.chanceFragmentos ?? [REGRAS.chanceFragmentoPadrao, REGRAS.chanceFragmentoPadrao, REGRAS.chanceFragmentoPadrao])
-      .reduce((a, c) => a + (Number(c) || 0), 0) * degrau.mult;
+    const tiers = ctx.consts.outlandTiers;
+    const degrau = degrauOutland(ctx.eu, tiers);
+    const peloNivel = degrauPeloNivel(ctx.eu?.level, tiers);
+    const proximo = proximoDegrau(ctx.eu?.level, tiers);
+    const multLoot = multLootBoost(ctx.eu, ctx.consts.tiposBoost, agora);
+    const raros = rarosOutland(ctx.consts, degrau.mult * multLoot);
+    const chanceBoss = raros[0].chance;
+    const chanceFragmentos = raros[1].chance + raros[2].chance + raros[3].chance;
     const interno = {
       ...ctx, ef, bike, bonus, aoeAlvos, diaSazonal, multGinasio,
       bonusLoot: Number(ctx.jogo.bonusLootPct?.(ctx.eu ?? {}, agora, ctx.consts.tiposBoost ?? [])) || 0,
@@ -426,7 +485,7 @@
         ...(r.inviavel ? vazio : r),
       });
       const l = linhas[linhas.length - 1];
-      // Na Outland cada abate rola os raros: token do boss e os três fragmentos (todos multiplicados pelo degrau).
+      // Na Outland cada abate rola os raros: token do boss, os três fragmentos e o osso (todos × degrau × Loot Boost).
       l.tokensH = l.outland ? l.killsH * chanceBoss : 0;
       l.fragmentosH = l.outland ? l.killsH * chanceFragmentos : 0;
     }
@@ -437,7 +496,12 @@
     return {
       heroi, bonus, bike, aoe, aoeAlvos, limiar: interno.consumo.limiar,
       multGinasio, buffGinasioPct: Math.round((multGinasio - 1) * 100),
-      outland: { tier: degrau.tier, rotulo: degrau.rotulo, mult: degrau.mult, chanceBoss, chanceFragmentos },
+      outland: {
+        tier: degrau.tier, rotulo: degrau.rotulo, mult: degrau.mult, nivel: degrau.nivel, multLoot, chanceBoss, chanceFragmentos, raros,
+        // O degrau que o nível já libera, quando a conta está num mais baixo (no jogo, troca-se na tela da Outland).
+        peloNivel: peloNivel.mult > degrau.mult ? { tier: peloNivel.tier, rotulo: peloNivel.rotulo, mult: peloNivel.mult, nivel: peloNivel.nivel } : null,
+        proximo: proximo ? { tier: proximo.tier, rotulo: proximo.rotulo, mult: proximo.mult, nivel: proximo.nivel } : null,
+      },
       porOutland: ordenar('killsH', soOutland),
       diaSazonal, heroiDoDia: !!diaSazonal && heroi.tipos.includes(diaSazonal),
       pocao: interno.consumo.pocao?.name ?? null,
@@ -449,6 +513,6 @@
 
   return {
     REGRAS, amplificar, dano, statsSelvagem, hpSelvagem, comDescontoDoIv, montarHeroi, filaDeAbates,
-    estoque, bonusDeXp, bikeDaConta, degrauOutland, analisar,
+    estoque, bonusDeXp, bikeDaConta, degrauOutland, degrauPeloNivel, proximoDegrau, multLootBoost, TIERS_OUTLAND, analisar,
   };
 });

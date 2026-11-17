@@ -106,6 +106,7 @@ ficar no chat dos canais de bônus (só Twitch) e assistir às lives que rendem 
   poções, revives e bolas que a conta gasta), com o risco de cada uma e as próximas que você destrava.
 - Usa **as fórmulas e o catálogo do próprio jogo, ao vivo** — quando o jogo muda, o cálculo acompanha.
 - Entende o **dia sazonal** (o tipo do dia dobra ataque, defesa e vida na hunt do mapa) e deixa ajustar os alvos por golpe do TM AoE.
+- Aba **Outland (tokens)**: a hunt da Outland que limpa mais rápido, a chance de cada drop raro (Boss Token, fragmentos e Osso do Sacrifício) no seu degrau e o degrau que o seu nível já libera.
 
 ### Sniper do mercado
 - Compra sozinho, **em segundo plano**, ofertas do Mercado da Comunidade que batam com as suas regras — sem você olhar o mercado. As

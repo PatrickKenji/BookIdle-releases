@@ -12,8 +12,20 @@ public record HuntLine(
     HuntRisk Risco, double MaiorGolpePct, double DanoPorAbatePct, string? Golpe,
     bool Outland = false, double TokensH = 0, double FragmentosH = 0);
 
-/// <summary>O degrau de Outland em vigor na conta (o jogo poda o escolhido pelo nível) e a chance de token por abate já multiplicada.</summary>
-public record HuntOutland(int Tier, string Rotulo, double Mult, double ChanceBoss);
+/// <summary>
+/// O degrau de Outland em vigor na conta (o jogo poda o escolhido pelo nível), a chance de cada raro por abate já
+/// multiplicada (degrau × Loot Boost), o degrau que o nível já libera quando a conta está num mais baixo, e o próximo.
+/// </summary>
+public record HuntOutland(
+    int Tier, string Rotulo, double Mult, double ChanceBoss,
+    double MultLoot = 1, IReadOnlyList<HuntOutlandRaro>? Raros = null,
+    HuntOutlandDegrau? PeloNivel = null, HuntOutlandDegrau? Proximo = null);
+
+/// <summary>Um drop raro da Outland: <c>boss</c>, <c>chave</c>, <c>shiny</c>, <c>bicicleta</c> ou <c>osso</c>, com a chance por abate.</summary>
+public record HuntOutlandRaro(string Chave, string Nome, double Chance);
+
+/// <summary>Um degrau da escada da Outland (a partir de que nível do treinador e quanto multiplica os raros).</summary>
+public record HuntOutlandDegrau(int Tier, string Rotulo, double Mult, int Nivel);
 
 public record HuntPokemon(string? Nome, int Level, string[] Tipos, double HpMax, string? ZMove, bool Aoe, int AoeAlvos);
 
@@ -103,9 +115,23 @@ public record HuntReport(
             porXp, porOuro,
             Str(d, "diaSazonal"), Bool(d, "heroiDoDia"),
             (int)Num(d, "buffGinasioPct"),
-            Obj(d, "outland", out var o) ? new HuntOutland((int)Num(o, "tier"), Str(o, "rotulo") ?? "", Num(o, "mult"), Num(o, "chanceBoss")) : null,
+            Obj(d, "outland", out var o) ? LerOutland(o) : null,
             Lines(d, "porOutland") ?? []);
     }
+
+    private static HuntOutland LerOutland(JsonElement o)
+    {
+        var raros = o.TryGetProperty("raros", out var arr) && arr.ValueKind == JsonValueKind.Array
+            ? arr.EnumerateArray().Where(x => x.ValueKind == JsonValueKind.Object && Str(x, "chave") is not null)
+                .Select(x => new HuntOutlandRaro(Str(x, "chave")!, Str(x, "nome") ?? "", Num(x, "chance"))).ToList()
+            : [];
+        var multLoot = Num(o, "multLoot");
+        return new HuntOutland((int)Num(o, "tier"), Str(o, "rotulo") ?? "", Num(o, "mult"), Num(o, "chanceBoss"),
+            multLoot > 0 ? multLoot : 1, raros, Degrau(o, "peloNivel"), Degrau(o, "proximo"));
+    }
+
+    private static HuntOutlandDegrau? Degrau(JsonElement o, string nome) =>
+        Obj(o, nome, out var d) ? new HuntOutlandDegrau((int)Num(d, "tier"), Str(d, "rotulo") ?? "", Num(d, "mult"), (int)Num(d, "nivel")) : null;
 
     /// <summary>null quando o campo existe mas não é lista (mensagem inválida); vazio quando falta.</summary>
     private static List<HuntLine>? Lines(JsonElement d, string nome)

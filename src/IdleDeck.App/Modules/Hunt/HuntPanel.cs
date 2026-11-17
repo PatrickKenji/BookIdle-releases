@@ -110,9 +110,11 @@ public sealed class HuntPanel : DockPanel
         if (r.Pokemon is { Aoe: true } pk) AdicionarAjusteAoe(sel, pk.AoeAlvos);
         _barra.Children.Add(Texto(_outland ? ResumoOutland(r) : Resumo(r), muted: true, margem: new Thickness(14, 0, 0, 0)));
 
+        if (_outland) _linhas.Children.Add(BlocoOutland(r));
         var lista = (_outland ? r.PorOutland ?? [] : _porOuro ? r.PorOuro : r.PorXp).Where(l => _bloqueadas || l.Liberada).ToList();
         if (lista.Count == 0) _linhas.Children.Add(Texto(Loc.T("Nenhuma hunt liberada para o nível deste treinador."), muted: true));
-        for (var i = 0; i < lista.Count; i++) _linhas.Children.Add(LinhaDaHunt(lista[i], i));
+        var raros = r.Outland?.Raros ?? [];
+        for (var i = 0; i < lista.Count; i++) _linhas.Children.Add(LinhaDaHunt(lista[i], i, raros));
     }
 
     /// <summary>Sem relatório da conta escolhida não há tabela: some com o título, os filtros e o cabeçalho.</summary>
@@ -134,14 +136,88 @@ public sealed class HuntPanel : DockPanel
         return string.Join(" · ", partes);
     }
 
-    /// <summary>Na Outland toda hunt é nível 150: o que separa uma da outra é a velocidade de limpar. A chance do token vem do degrau em vigor.</summary>
+    /// <summary>Na Outland toda hunt é nível 150: o que separa uma da outra é a velocidade de limpar. As chances vêm do degrau em vigor.</summary>
     private static string ResumoOutland(HuntReport r)
     {
         if (r.Outland is not { } o) return Loc.T("Outland: o jogo não mandou o degrau.");
         var melhor = r.PorOutland?.FirstOrDefault(l => l.Liberada && !l.Inviavel);
-        var partes = new List<string> { Loc.T("{0} (×{1}): token {2:0.###}% por abate", o.Rotulo, o.Mult.ToString("0.##", Br), o.ChanceBoss * 100) };
+        var partes = new List<string> { Loc.T("{0} (×{1}) em vigor", o.Rotulo, Mult(o.Mult)) };
+        if (o.MultLoot > 1) partes.Add(Loc.T("Loot Boost ×{0}", Mult(o.MultLoot)));
         if (melhor is { TokensH: > 0 }) partes.Add(Loc.T("melhor: 1 token a cada {0:0.#} h", 1 / melhor.TokensH));
         return string.Join(" · ", partes);
+    }
+
+    private static string Mult(double v) => v.ToString("0.##", Br);
+
+    /// <summary>O nome do raro no idioma do app (o token tem nome próprio no jogo e fica igual).</summary>
+    private static string NomeDoRaro(HuntOutlandRaro x) => x.Chave switch
+    {
+        "boss" => "Bronze Boss Token",
+        "chave" => Loc.T("Fragmento de Chave"),
+        "shiny" => Loc.T("Fragmento de Shiny Stone"),
+        "bicicleta" => Loc.T("Fragmento de Bicicleta"),
+        "osso" => Loc.T("Osso do Sacrifício"),
+        _ => x.Nome,
+    };
+
+    /// <summary>"1 em 2.222" por abate.</summary>
+    private static string UmEm(double chance) => chance > 0 ? Loc.T("1 em {0}", (1 / chance).ToString("N0", Br)) : "—";
+
+    /// <summary>Quantos saem por hora: "2,4/h" quando passa de 1, senão "1 a cada 7,5 h" (ou em dias, quando passa de 2 dias).</summary>
+    private static string Ritmo(double porHora)
+    {
+        if (porHora <= 0) return "—";
+        if (porHora >= 1) return Loc.T("{0}/h", porHora.ToString("0.##", Br));
+        var horas = 1 / porHora;
+        return horas > 48 ? Loc.T("1 a cada {0} dias", (horas / 24).ToString("0.#", Br)) : Loc.T("1 a cada {0} h", horas.ToString("0.#", Br));
+    }
+
+    /// <summary>
+    /// Em cima da lista da Outland: a chance de cada raro por abate e quanto sai na melhor hunt; o degrau que o nível
+    /// do treinador já libera (quando a conta está num mais baixo) e o próximo degrau da escada.
+    /// </summary>
+    private StackPanel BlocoOutland(HuntReport r)
+    {
+        var painel = new StackPanel { Margin = new Thickness(0, 0, 0, 10) };
+        if (r.Outland is not { } o) return painel;
+        var melhor = r.PorOutland?.FirstOrDefault(l => l.Liberada && !l.Inviavel);
+        var raros = o.Raros ?? [];
+        if (raros.Count > 0)
+        {
+            var g = new Grid { Margin = new Thickness(0, 0, 0, 6), HorizontalAlignment = HorizontalAlignment.Left };
+            for (var c = 0; c < 3; c++) g.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+            void Celula(UIElement e, int linha, int coluna)
+            {
+                Grid.SetRow(e, linha);
+                Grid.SetColumn(e, coluna);
+                g.Children.Add(e);
+            }
+            var titulos = new[]
+            {
+                Loc.T("Drop da Outland"), Loc.T("Chance por abate"),
+                melhor is null ? Loc.T("Na melhor hunt") : Loc.T("Na melhor hunt ({0})", melhor.Nome),
+            };
+            g.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+            for (var c = 0; c < titulos.Length; c++) Celula(Texto(titulos[c], muted: true, bold: true, margem: new Thickness(0, 0, 18, 2)), 0, c);
+            for (var i = 0; i < raros.Count; i++)
+            {
+                var x = raros[i];
+                g.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+                Celula(Texto(NomeDoRaro(x), cor: x.Chave == "boss" ? "Orange" : null, margem: new Thickness(0, 0, 18, 1)), i + 1, 0);
+                Celula(Texto(UmEm(x.Chance), margem: new Thickness(0, 0, 18, 1)), i + 1, 1);
+                Celula(Texto(melhor is null ? "—" : Ritmo(melhor.KillsH * x.Chance), muted: true, margem: new Thickness(0, 0, 18, 1)), i + 1, 2);
+            }
+            painel.Children.Add(g);
+        }
+        var multipl = Loc.T("× {0} do degrau", Mult(o.Mult)) + (o.MultLoot > 1 ? Loc.T(" × {0} do Loot Boost", Mult(o.MultLoot)) : "");
+        painel.Children.Add(Texto(Loc.T("Chances já multiplicadas: {0}.", multipl), muted: true));
+        if (o.PeloNivel is { } p)
+            painel.Children.Add(Texto(Loc.T("Seu nível ({0}) já libera a {1} (×{2}): troque na Outland do jogo para ter ×{3} nos raros.",
+                r.TreinadorLevel.ToString("N0", Br), p.Rotulo, Mult(p.Mult), Mult(p.Mult / Math.Max(0.01, o.Mult))), cor: "Orange"));
+        painel.Children.Add(o.Proximo is { } n
+            ? Texto(Loc.T("Próximo degrau: {0} (×{1}) no nível {2}.", n.Rotulo, Mult(n.Mult), n.Nivel.ToString("N0", Br)), muted: true)
+            : Texto(Loc.T("Seu nível já alcança o último degrau da Outland."), muted: true));
+        return painel;
     }
 
     private void AdicionarAjusteAoe(int contaId, int alvos)
@@ -216,7 +292,7 @@ public sealed class HuntPanel : DockPanel
         .ToArray<UIElement>();
 
     /// <summary>Uma hunt do ranking. Linhas alternadas (zebra) para o olho não pular de linha.</summary>
-    private Border LinhaDaHunt(HuntLine l, int indice)
+    private Border LinhaDaHunt(HuntLine l, int indice, IReadOnlyList<HuntOutlandRaro> raros)
     {
         var nome = l.Nome + (l.Atual ? Loc.T("  ◀ aqui") : "") + (l.Liberada ? "" : "  🔒");
         var risco = l.Inviavel ? Loc.T("não mata") : l.Risco switch
@@ -251,9 +327,10 @@ public sealed class HuntPanel : DockPanel
             Opacity = l.Liberada && !l.Inviavel ? 1 : 0.55,
         };
         borda.ToolTip = l.Inviavel ? Loc.T("O pokémon não consegue derrubar estes selvagens.")
-            : l.Outland ? Loc.T("Tokens {0:0.##}/h (1 a cada {1:0.#} h) · fragmentos (chave, shiny, bicicleta) {2:0.###}/h\nGold bruto {3}/h − poções {4} − revives {5} − bolas {6}\nmaior golpe do selvagem {7:P0} do seu HP · mortes/h {8:0.##}",
-                l.TokensH, l.TokensH > 0 ? 1 / l.TokensH : 0, l.FragmentosH,
-                Compacto(l.OuroH), Compacto(l.CustoPocoesH), Compacto(l.CustoRevivesH), Compacto(l.CustoBolasH), l.MaiorGolpePct, l.MortesH)
+            : l.Outland ? string.Join("\n", raros.Select(x => $"{NomeDoRaro(x)}: {Ritmo(l.KillsH * x.Chance)}"))
+                + (raros.Count > 0 ? "\n" : "")
+                + Loc.T("Gold bruto {0}/h − poções {1} − revives {2} − bolas {3}\nmaior golpe do selvagem {4:P0} do seu HP · mortes/h {5:0.##}",
+                    Compacto(l.OuroH), Compacto(l.CustoPocoesH), Compacto(l.CustoRevivesH), Compacto(l.CustoBolasH), l.MaiorGolpePct, l.MortesH)
             : Loc.T("Gold bruto {0}/h − poções {1} − revives {2} − bolas {3}\nXP do treinador {4}/h · maior golpe do selvagem {5:P0} do seu HP · mortes/h {6:0.##}",
                 Compacto(l.OuroH), Compacto(l.CustoPocoesH), Compacto(l.CustoRevivesH), Compacto(l.CustoBolasH),
                 Compacto(l.XpTreinadorH), l.MaiorGolpePct, l.MortesH);

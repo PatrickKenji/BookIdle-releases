@@ -82,7 +82,7 @@
 
   // ---- o jogo: fórmulas e catálogo, sempre da versão no ar -----------------------------------
   /** Módulos que o /hunt usa se existirem: um jogo sem eles continua calculando (sem esse detalhe). */
-  const OPCIONAIS = new Set(['diaSazonal', 'ginasios']);
+  const OPCIONAIS = new Set(['diaSazonal', 'ginasios', 'outlandTiers', 'sacrificio']);
   const MODULOS = {
     analyser: 'hunt-analyser.mjs',
     recompensa: 'shared/recompensa-hunt.mjs',
@@ -101,6 +101,8 @@
     megas: 'shared/megas.mjs',
     diaSazonal: 'shared/dia-sazonal.mjs',
     ginasios: 'shared/ginasios.mjs',
+    outlandTiers: 'shared/outland-tiers.mjs',
+    sacrificio: 'shared/sacrificio.mjs',
   };
   const json = (caminho) => fetch(`${ORIGEM}/${caminho}`, SEM_CACHE).then((r) => (r.ok ? r.json() : null)).catch(() => null);
 
@@ -186,6 +188,7 @@
       pk?.id, pk?.level, pk?.stats, pk?.tmElemental, pk?.tmAoe, eu?.level, eu?.bonusXp, eu?.bicicleta?.equipadaRar,
       a.autoPotion, a.potionIds, a.hpLimiar, a.autoRevive, a.reviveIds, a.autoBallSemParar, a.autoBallAteCapturar, a.ballIds,
       eu?.huntSlug, aoeAlvos, eu?.diaSazonal?.tipo, eu?.outlandTier, eu?.ginasiosPodio ?? eu?.ginasios,
+      eu?.loja?.boosts?.loot,
     ]);
   }
 
@@ -247,7 +250,7 @@
           bonusLootPct: analyser.bonusLootPct,
           multXpPokemon: analyser.multXpPokemon,
           multXpTreinador: analyser.multXpTreinador,
-          fatorPassoDaRaridade: bicicletas.fatorPassoDaRaridade,
+          fatorPassoNaHunt: bicicletas.fatorPassoNaHunt ?? bicicletas.fatorPassoDaRaridade,
           MS_ONDA: analyser.MS_ONDA, MAX_MOBS: analyser.MAX_MOBS,
           MS_DESLOC_MS: analyser.MS_DESLOC_MS, CD_MOVIMENTO_MEDIO_MS: analyser.CD_MOVIMENTO_MEDIO_MS,
           multDanoSazonal: diaSazonal?.multDanoSazonal,
@@ -259,8 +262,10 @@
           tabelaTipos: welcome.tabelaTipos, ampliacaoHunt: welcome.ampliacaoHunt,
           multHpSelvagem: welcome.multHpSelvagem, multDanoSelvagem: welcome.multDanoSelvagem,
           tiposBoost: welcome.tiposBoost, bicicletas: welcome.bicicletas,
-          chanceBossToken: welcome.chanceBossToken, outlandTiers: welcome.outlandTiers,
+          chanceBossToken: welcome.chanceBossToken,
+          outlandTiers: welcome.outlandTiers ?? jogo.mod.outlandTiers?.OUTLAND_TIERS,
           chanceFragmentos: [welcome.casas?.fragmento?.chanceDrop, welcome.shinyStone?.chanceDrop, welcome.bicicletas?.fragmento?.chanceDrop],
+          chanceOsso: jogo.mod.sacrificio?.CHANCE_OSSO_SACRIFICIO,
         },
         eu,
         itens,
@@ -286,7 +291,12 @@
         porXp: corte(r.porXp),
         porOuro: corte(r.porOuro),
         buffGinasioPct: r.buffGinasioPct,
-        outland: { tier: r.outland.tier, rotulo: r.outland.rotulo, mult: r2(r.outland.mult), chanceBoss: r.outland.chanceBoss, chanceFragmentos: r.outland.chanceFragmentos },
+        outland: {
+          tier: r.outland.tier, rotulo: r.outland.rotulo, mult: r2(r.outland.mult), nivel: r.outland.nivel, multLoot: r2(r.outland.multLoot),
+          chanceBoss: r.outland.chanceBoss, chanceFragmentos: r.outland.chanceFragmentos,
+          raros: r.outland.raros.map((x) => ({ chave: x.chave, nome: x.nome, chance: x.chance })),
+          peloNivel: r.outland.peloNivel, proximo: r.outland.proximo,
+        },
         porOutland: corteOutland(r.porOutland),
       });
     } catch (err) {
