@@ -48,7 +48,9 @@ public partial class MainWindow : Window, IModuleHostServices
     private readonly AccountDragController _drag;
     private const string TopIdleVotedMessage = "topidle:voted";
     private static readonly TimeSpan VoteResyncAfter = TimeSpan.FromSeconds(20);
-    private static readonly string TopIdleVoteScript = AccountWebWindow.LoadScript("Scripts.topidle-vote.js");
+    /// <summary>Detectores de voto confirmado de cada site (cada um só roda no próprio domínio).</summary>
+    private static readonly string VoteDetectScript =
+        AccountWebWindow.LoadScript("Scripts.idlehub-vote.js") + "\n" + AccountWebWindow.LoadScript("Scripts.topidle-vote.js");
     /// <summary>Lê da página do jogo quando foi o último voto e quando libera de novo (vale até para votos feitos fora do app).</summary>
     private static readonly string TopIdleStatusScript = AccountWebWindow.LoadScript("Scripts.topidle-status.js");
     private static readonly string AutoCatchScript = AccountWebWindow.LoadScript("Scripts.auto-catch.js");
@@ -934,13 +936,15 @@ public partial class MainWindow : Window, IModuleHostServices
         SaveSettings();
     }
 
-    // ---------- Voto no TopIdle ----------
+    // ---------- Voto no site do jogo (IdleHub, TopIdle…) ----------
 
     private async void Vote_Click(object sender, RoutedEventArgs e)
     {
         e.Handled = true;
         if (sender is not FrameworkElement { Tag: AccountItem item }) return;
         var view = item.View;
+        if (!item.CanVote) return;
+        var site = item.VoteSiteName;
         if (_voteWindows.TryGetValue(view, out var open))
         {
             open.Activate();
@@ -948,11 +952,11 @@ public partial class MainWindow : Window, IModuleHostServices
         }
         if (_host is null)
         {
-            ArcadeDialog.Show(this, "TopIdle", Loc.T("O navegador ainda está abrindo. Tente de novo em instantes."));
+            ArcadeDialog.Show(this, site, Loc.T("O navegador ainda está abrindo. Tente de novo em instantes."));
             return;
         }
         var voted = false;
-        var window = await AccountWebWindow.OpenAsync(this, _host, view, "TopIdle", VoteCooldown.VoteUrl, TopIdleVoteScript,
+        var window = await AccountWebWindow.OpenAsync(this, _host, view, site, view.Profile.VoteUrl!, VoteDetectScript,
             message =>
             {
                 if (message != TopIdleVotedMessage) return;
@@ -961,7 +965,7 @@ public partial class MainWindow : Window, IModuleHostServices
             });
         if (window is null)
         {
-            ArcadeDialog.Show(this, "TopIdle", Loc.T("Não foi possível abrir a página de voto."), kind: ArcadeDialogKind.Error);
+            ArcadeDialog.Show(this, site, Loc.T("Não foi possível abrir a página de voto."), kind: ArcadeDialogKind.Error);
             return;
         }
         _voteWindows[view] = window;
@@ -983,7 +987,13 @@ public partial class MainWindow : Window, IModuleHostServices
     {
         if (Core.Vote.TopIdleStatus.Parse(json) is not { } status) return;
         var merged = status.Reconcile(view.Config.LastVoteUtc);
-        if (view.Config.LastVoteUtc is { } stored && Math.Abs((stored - merged).TotalSeconds) < 1) return;
+        if (view.Config.LastVoteUtc is { } stored)
+        {
+            if (Math.Abs((stored - merged).TotalSeconds) < 1) return;
+            // o /idlehub/me diz "libera em agora" a cada consulta quando o voto está livre: não regrava à toa
+            var now = DateTime.UtcNow;
+            if (VoteCooldown.Remaining(stored, now) == TimeSpan.Zero && VoteCooldown.Remaining(merged, now) == TimeSpan.Zero) return;
+        }
         SetLastVote(view, merged);
     }
 
@@ -1301,7 +1311,7 @@ public partial class MainWindow : Window, IModuleHostServices
     {
         var window = new ProfileWindow { Owner = this };
         if (window.ShowDialog() != true) return;
-        var profile = ProfileOperations.AddProfile(_settings, window.ProfileName, window.Url, window.MaxAccounts);
+        var profile = ProfileOperations.AddProfile(_settings, window.ProfileName, window.Url, window.MaxAccounts, window.VoteUrl);
         _cards.Add(new ProfileCard(profile));
         BuildModuleButtons();
         ApplyLayout();
@@ -1316,7 +1326,10 @@ public partial class MainWindow : Window, IModuleHostServices
         card.Profile.Name = window.ProfileName;
         card.Profile.Url = window.Url;
         card.Profile.MaxAccounts = window.MaxAccounts;
+        card.Profile.VoteUrl = window.VoteUrl;
         card.Refresh();
+        foreach (var view in ViewsOf(card.Profile))
+            if (_items.TryGetValue(view, out var item)) item.RefreshVote();
         if (urlChanged)
             foreach (var view in ViewsOf(card.Profile)) view.Start();
         BuildModuleButtons();

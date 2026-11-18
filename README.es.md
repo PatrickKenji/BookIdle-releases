@@ -2,10 +2,10 @@
 
 **🌐 Language / Idioma / Idioma:** [Português](README.md) · [English](README.en.md) · **Español**
 
-**Gestor de cuentas y herramientas para [pokeidle.io](https://pokeidle.io)** — varias cuentas lado a lado, captura automática, voto en TopIdle, bonos de
+**Gestor de cuentas y herramientas para [pokeidle.io](https://pokeidle.io)** — varias cuentas lado a lado, captura automática, voto en IdleHub, bonos de
 directos de Twitch y Kick, ranking de hunts y sniper del mercado. Programa de Windows, de código abierto y gratuito.
 
-> **Proyecto no oficial.** BookIdle no tiene ninguna relación con pokeidle.io, TopIdle, Twitch, Kick, Nintendo ni The Pokémon Company; todas las
+> **Proyecto no oficial.** BookIdle no tiene ninguna relación con pokeidle.io, IdleHub, Twitch, Kick, Nintendo ni The Pokémon Company; todas las
 > marcas pertenecen a sus respectivos dueños. Úsalo bajo tu propia responsabilidad y respeta las reglas del juego (consulta [Uso responsable](#uso-responsable)).
 
 <p align="center">
@@ -52,7 +52,7 @@ ejecuta entera en tu ordenador y **no se nos envía nada**.
   mucho elige la cuenta de la lista, y el resto queda de tu parte.
 - **Sin telemetría, sin análisis de uso, sin informes de errores enviados.** Las únicas direcciones con las que la aplicación contacta son:
   - `pokeidle.io` — el propio juego y la lista pública de objetos (`/assets/items.json`);
-  - `topidle.com` — la página de voto, en la ventana de voto (quien vota eres tú; la aplicación no hace clic en nada);
+  - `idlehub.io` — la página de voto, en la ventana de voto (quien vota eres tú; la aplicación no hace clic en nada);
   - `twitch.tv` (sitio, chat y directos) — solo si conectas Twitch (ver abajo);
   - `kick.com` (sitio y directos) — solo si conectas Kick (ver abajo);
   - `github.com` — para comprobar si hay una versión nueva y descargarla;
@@ -86,11 +86,13 @@ inicio de sesión solo se envía a la propia Twitch/Kick.
 - **Inicio de sesión automático opcional:** rellena el login del juego con lo que hay en el Cofre y, en Google, elige la cuenta de la lista.
 - **Perfiles de juego:** además de PokeIdle puedes crear perfiles para otros juegos web (consulta [Otros juegos](#otros-juegos-idle)).
 
-### Votar en TopIdle
-- Un botón **"Votar en TopIdle"** en cada cuenta, que abre la página de voto **con la sesión de esa cuenta**. Tú votas; BookIdle **no
+### Votar en IdleHub
+- Un botón **"Votar en IdleHub"** en cada cuenta, que abre la página de voto **con la sesión de esa cuenta**. Tú votas; BookIdle **no
   hace clic por ti**.
 - El botón muestra **cuánto falta** para poder votar de nuevo ("Votar en 5 h"), leyendo lo que dice el propio juego — vale incluso para
   votos hechos fuera de la aplicación — y se ilumina en amarillo cuando ya se puede votar.
+- El sitio de votación es una opción del perfil de juego (**Sitio de votación**, al crear o editar el perfil). PokeIdle ya viene
+  con IdleHub; déjalo vacío para quitar el botón.
 
 ### Bonos de directos de Twitch y Kick (puntos del canal)
 - **Conectar Twitch** y **Conectar Kick** en cada cuenta (cada una con la suya), con la lista de canales de bono del perfil (⋯ del perfil).

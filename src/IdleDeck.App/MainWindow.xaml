@@ -20,7 +20,7 @@
                         <MenuItem Header="{l:T '✎  Renomear'}" Click="Rename_Click" Tag="{Binding}" />
                         <MenuItem Header="{l:T '⟳  Recarregar'}" Click="ResetAccount_Click" Tag="{Binding}" />
                         <MenuItem Header="{Binding VoteLabel}" Click="Vote_Click" Tag="{Binding}" Visibility="{Binding VoteVisibility}"
-                                  ToolTip="{l:T 'Abre a página de voto do TopIdle com a sessão desta conta. Você vota; o app não clica por você.'}" />
+                                  ToolTip="{l:T 'Abre a página de voto do jogo com a sessão desta conta. Você vota; o app não clica por você.'}" />
                         <MenuItem Header="{Binding TwitchConnectLabel}" Click="ConnectTwitch_Click" Tag="{Binding}"
                                   ToolTip="{l:T 'Liga a Twitch desta conta: ela fica presente no chat das lives de bônus, em segundo plano.'}" />
                         <MenuItem Header="{Binding TwitchDisconnectLabel}" Click="DisconnectTwitch_Click" Tag="{Binding}" Visibility="{Binding TwitchDisconnectVisibility}" />
@@ -28,7 +28,7 @@
                                   ToolTip="{l:T 'Liga a Kick desta conta: ela assiste as lives de bônus da Kick em segundo plano.'}" />
                         <MenuItem Header="{Binding KickDisconnectLabel}" Click="DisconnectKick_Click" Tag="{Binding}" Visibility="{Binding KickDisconnectVisibility}" />
                         <MenuItem Header="{Binding MuteLabel}" Click="ToggleMute_Click" Tag="{Binding}" />
-                        <MenuItem Header="{Binding AutoCatchLabel}" Click="ToggleAutoCatch_Click" Tag="{Binding}" Visibility="{Binding VoteVisibility}"
+                        <MenuItem Header="{Binding AutoCatchLabel}" Click="ToggleAutoCatch_Click" Tag="{Binding}" Visibility="{Binding PokeIdleVisibility}"
                                   ToolTip="{l:T 'Clica sozinho nos pokémons caídos desta conta, a cada segundo (para quem não tem o VIP).'}" />
                         <MenuItem Header="{Binding ProbeLabel}" Click="MarketProbe_Click" Tag="{Binding}"
                                   ToolTip="{l:T 'Diagnóstico: registra só a forma do tráfego do jogo (sem chaves) para aprendermos como o mercado funciona.'}" />
@@ -67,7 +67,7 @@
                         <TextBlock Text="{Binding Subtitle}" Style="{StaticResource MutedText}" Margin="0,2,0,0" />
                         <ProgressBar Style="{StaticResource RamBar}" Value="{Binding RamFraction}" Margin="0,5,0,0" />
                         <!-- As duas ações do jogo, à vista (antes só existiam no menu do botão direito) -->
-                        <Grid Margin="0,6,0,0" Visibility="{Binding VoteVisibility}">
+                        <Grid Margin="0,6,0,0" Visibility="{Binding PokeIdleVisibility}">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="*" />
@@ -77,8 +77,8 @@
                                 <RowDefinition Height="Auto" />
                             </Grid.RowDefinitions>
                             <Button Grid.Column="0" Content="{Binding VoteButtonLabel}" Click="Vote_Click" Tag="{Binding}"
-                                    FontSize="10" Padding="4,3" Margin="0,0,3,0"
-                                    ToolTip="{l:T 'Abre a página de voto do TopIdle com a sessão desta conta. Você vota; o app não clica por você. Dá para votar de novo a cada 24 h.'}">
+                                    FontSize="10" Padding="4,3" Margin="0,0,3,0" Visibility="{Binding VoteVisibility}"
+                                    ToolTip="{l:T 'Abre a página de voto do jogo com a sessão desta conta. Você vota; o app não clica por você. Dá para votar de novo a cada 24 h.'}">
                                 <Button.Style>
                                     <Style TargetType="Button" BasedOn="{StaticResource ArcadeButton}">
                                         <Style.Triggers>
@@ -173,7 +173,7 @@
                              HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,-4,-4" />
                     <Border Width="14" Height="14" CornerRadius="7" Background="{DynamicResource Yellow}" BorderBrush="{DynamicResource Outline}" BorderThickness="2"
                             HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,-4,-4,0" Visibility="{Binding VoteDotVisibility}"
-                            ToolTip="{l:T 'Já pode votar no TopIdle'}" />
+                            ToolTip="{Binding VoteDotTip}" />
                 </Grid>
             </Button>
             <DataTemplate.Triggers>

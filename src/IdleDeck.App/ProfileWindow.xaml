@@ -14,10 +14,15 @@
         <TextBox x:Name="NameBox" MaxLength="40" />
 
         <TextBlock Text="{l:T 'Endereço (URL)'}" Style="{StaticResource MutedText}" Margin="0,12,0,4" />
-        <TextBox x:Name="UrlBox" Text="{l:T 'https://'}" />
+        <TextBox x:Name="UrlBox" Text="{l:T 'https://'}" LostKeyboardFocus="UrlBox_LostKeyboardFocus" />
 
         <TextBlock Text="{l:T 'Limite de contas (ex.: quantas o jogo permite por IP)'}" Style="{StaticResource MutedText}" Margin="0,12,0,4" />
         <TextBox x:Name="LimitBox" Width="80" HorizontalAlignment="Left" Text="4" />
+
+        <TextBlock Text="{l:T 'Site de votação (opcional)'}" Style="{StaticResource MutedText}" Margin="0,12,0,4" />
+        <TextBox x:Name="VoteBox" />
+        <TextBlock Style="{StaticResource MutedText}" Margin="0,4,0,0" TextWrapping="Wrap" FontSize="11"
+                   Text="{l:T 'Página onde o jogo conta os votos (ex.: https://idlehub.io/jogo/pokeidle-io). Vazio = sem botão de voto.'}" />
 
         <TextBlock x:Name="ErrorText" Foreground="{DynamicResource Err}" Margin="0,10,0,0" Visibility="Collapsed" TextWrapping="Wrap" />
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,18,0,0">

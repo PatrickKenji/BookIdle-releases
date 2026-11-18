@@ -28,6 +28,7 @@
     <EmbeddedResource Include="Scripts\login-detect.js" LogicalName="Scripts.login-detect.js" />
     <EmbeddedResource Include="Scripts\topidle-vote.js" LogicalName="Scripts.topidle-vote.js" />
     <EmbeddedResource Include="Scripts\topidle-status.js" LogicalName="Scripts.topidle-status.js" />
+    <EmbeddedResource Include="Scripts\idlehub-vote.js" LogicalName="Scripts.idlehub-vote.js" />
     <EmbeddedResource Include="Scripts\market-probe.js" LogicalName="Scripts.market-probe.js" />
     <EmbeddedResource Include="Scripts\market-bridge.js" LogicalName="Scripts.market-bridge.js" />
     <EmbeddedResource Include="Scripts\auto-catch.js" LogicalName="Scripts.auto-catch.js" />

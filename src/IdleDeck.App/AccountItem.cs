@@ -224,17 +224,25 @@ public sealed class AccountItem : INotifyPropertyChanged
         OnPropertyChanged(nameof(KickDisconnectVisibility));
     }
 
-    // ---------- Voto no TopIdle ----------
+    // ---------- Voto no site do jogo (IdleHub, TopIdle…) ----------
 
-    /// <summary>O voto só existe para o PokeIdle: o host do perfil casa com pokeidle.io.</summary>
-    public bool CanVote => View.IsPokeIdle;
+    /// <summary>O perfil de jogo tem um site de votação configurado (no PokeIdle, o IdleHub).</summary>
+    public bool CanVote => !string.IsNullOrWhiteSpace(View.Profile.VoteUrl);
+
+    /// <summary>Nome curto do site de voto: "IdleHub", "TopIdle" ou o domínio.</summary>
+    public string VoteSiteName => VoteSites.DisplayName(View.Profile.VoteUrl);
 
     public Visibility VoteVisibility => CanVote ? Visibility.Visible : Visibility.Collapsed;
 
-    public string VoteLabel => VoteCooldown.Label(View.Config.LastVoteUtc, DateTime.UtcNow);
+    /// <summary>Captura automática e os botões do jogo na linha da conta só existem no PokeIdle.</summary>
+    public Visibility PokeIdleVisibility => View.IsPokeIdle ? Visibility.Visible : Visibility.Collapsed;
+
+    public string VoteLabel => VoteCooldown.Label(VoteSiteName, View.Config.LastVoteUtc, DateTime.UtcNow);
 
     /// <summary>Texto do botão de voto na linha da conta (curto, para caber ao lado do botão da Twitch).</summary>
-    public string VoteButtonLabel => VoteCooldown.ShortLabel(View.Config.LastVoteUtc, DateTime.UtcNow);
+    public string VoteButtonLabel => VoteCooldown.ShortLabel(VoteSiteName, View.Config.LastVoteUtc, DateTime.UtcNow);
+
+    public string VoteDotTip => Loc.T("Já pode votar no {0}", VoteSiteName);
 
     /// <summary>Liberado para votar de novo (selo no quadrado da conta no menu recolhido).</summary>
     public bool VoteAvailable =>
@@ -250,6 +258,8 @@ public sealed class AccountItem : INotifyPropertyChanged
         OnPropertyChanged(nameof(VoteVisibility));
         OnPropertyChanged(nameof(VoteAvailable));
         OnPropertyChanged(nameof(VoteDotVisibility));
+        OnPropertyChanged(nameof(VoteDotTip));
+        OnPropertyChanged(nameof(PokeIdleVisibility));
     }
 
     private bool _isProbing;

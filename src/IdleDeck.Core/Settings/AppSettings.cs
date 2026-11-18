@@ -53,6 +53,12 @@ public class GameProfile
     /// <summary>Sniper do mercado de cada conta deste perfil (chave = <see cref="AccountConfig.ProfileName"/>).</summary>
     public Dictionary<string, SniperAccountConfig> Sniper { get; set; } = [];
 
+    /// <summary>
+    /// Página de votação do jogo (ex.: IdleHub). "" = o jogo não tem voto; null = arquivo de antes do campo
+    /// (ao carregar vira o padrão do jogo, veja <see cref="Vote.VoteSites.Normalize"/>).
+    /// </summary>
+    public string? VoteUrl { get; set; }
+
     /// <summary>Zoom das páginas das contas deste jogo (1.0 = 100%).</summary>
     public double Zoom { get; set; } = 1.0;
 
@@ -125,6 +131,7 @@ public class AppSettings
         Id = DefaultProfileId,
         Name = "PokeIdle",
         Url = DefaultUrl,
+        VoteUrl = Vote.VoteSites.DefaultFor(DefaultUrl),
         MaxAccounts = 4,
         Accounts = Enumerable.Range(1, 4).Select(i => new AccountConfig(Localization.Loc.T("Conta {0}", i), $"conta{i}")).ToList(),
     };
@@ -151,6 +158,7 @@ public class AppSettings
             p.TwitchChannels = TwitchChannels.Normalize(p.TwitchChannels ?? []);
             p.KickChannels = KickChannels.Normalize(p.KickChannels ?? []);
             NormalizeSniper(p);
+            p.VoteUrl = Vote.VoteSites.Normalize(p.VoteUrl, p.Url);
             p.Zoom = p.Zoom <= 0 || double.IsNaN(p.Zoom) ? 1.0 : Math.Clamp(p.Zoom, GameProfile.MinZoom, GameProfile.MaxZoom);
         }
         if (Profiles.All(p => p.Id != SelectedProfileId)) SelectedProfileId = Profiles[0].Id;

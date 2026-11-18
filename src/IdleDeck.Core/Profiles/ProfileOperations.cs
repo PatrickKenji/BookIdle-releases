@@ -34,7 +34,7 @@ public static class ProfileOperations
     }
 
     /// <summary>Cria um perfil vazio e o seleciona.</summary>
-    public static GameProfile AddProfile(AppSettings settings, string name, string url, int maxAccounts)
+    public static GameProfile AddProfile(AppSettings settings, string name, string url, int maxAccounts, string voteUrl = "")
     {
         var profile = new GameProfile
         {
@@ -42,6 +42,7 @@ public static class ProfileOperations
             Name = name.Trim(),
             Url = url.Trim(),
             MaxAccounts = Math.Clamp(maxAccounts, 1, GameProfile.MaxAccountsLimit),
+            VoteUrl = voteUrl.Trim(),
         };
         settings.Profiles.Add(profile);
         settings.SelectedProfileId = profile.Id;
